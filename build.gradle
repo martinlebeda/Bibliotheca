@@ -1,0 +1,75 @@
+// import java.nio.file.Paths
+
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'gradle-one-jar'
+
+sourceCompatibility = 1.7
+version = '0.1'
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/groups/public"}
+    }
+    dependencies {
+        classpath 'com.github.rholder:gradle-one-jar:1.0.4'
+        classpath 'com.github.townsfolk:gradle-release:1.2'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile 'org.codehaus.groovy:groovy-all:2.3.4'
+
+//    compile 'org.apache.lucene:lucene-analyzers-common:4.9.0'
+//    compile 'org.apache.lucene:lucene-queryparser:4.9.0'
+//    compile 'org.apache.lucene:lucene-core:4.9.0'
+////    compile 'org.apache.lucene:lucene-codecs:4.9.0'
+
+    compile 'ch.qos.logback:logback-classic:1.1.2'
+
+    compile 'commons-cli:commons-cli:1.2'
+    compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile 'commons-codec:commons-codec:1.10'
+    compile 'commons-io:commons-io:2.4'
+
+    compile 'org.imgscalr:imgscalr-lib:4.2'
+    compile 'org.pegdown:pegdown:1.4.2'
+
+    compile 'org.apache.pdfbox:pdfbox:1.8.7'
+
+    compile 'org.mikeneck.graffiti:mike-graffiti-core:1.0'
+    compile 'org.eclipse.jetty:jetty-server:9.2.2.v20140723'
+    compile 'org.eclipse.jetty:jetty-webapp:9.2.2.v20140723'
+
+//    compile 'org.mapdb:mapdb:1.0.6'
+}
+
+jar {
+
+    manifest {
+        attributes 'Main-Class': 'Bibliotheca'
+        attributes 'Implementation-Title': 'Simple locate files', 'Implementation-Version': version
+    }
+}
+
+// Configure the oneJar task
+task oneJar(type: OneJar) {
+    mainClass = 'Bibliotheca'
+
+}
+
+//task localDeploy(type: Copy, dependsOn: oneJar) {
+//    from "build/libs/Bibliotheca-${version}-standalone.jar"
+//    into { Paths.get(System.getProperty("user.home"), "bin").toString() }
+//}
+
+// TODO Lebeda - release with numbering
+// TODO Lebeda - distribution package with bath or shell script
+// TODO Lebeda - deploy to public directo
