@@ -48,6 +48,7 @@ class WebUI {
     public static final String FRM_NAMES = "booknames"
     public static final String FRM_DESCRIPTION = "bookdescription"
     public static final String CLASS_EDIT_FORM_SECTION = "editFormSection"
+    public static final String TIDYUP = "tidyup"
     private final ConfigObject config
     def final CuttingsService cuttingService
 
@@ -99,6 +100,44 @@ class WebUI {
 
     @Get('/browse')
     def browse() {
+        def file = new File(params['path'])
+
+        // tidyup some file
+        String tidyUp = params[TIDYUP]
+        if (tidyUp) {
+            file.eachFile {
+                File beleTgt = new File(config.beletrie)
+                String firstLetter = StringUtils.substring(tidyUp, 0, 1).toUpperCase()
+                def split = tidyUp.split(/ - /, 2)
+                String author = split[0]
+
+                if (it.name.startsWith(tidyUp)) {
+                    def tgt = Paths.get(beleTgt.absolutePath, firstLetter, author).toFile()
+
+                    File tgtFile = Paths.get(tgt.absolutePath, it.name).toFile()
+
+                    if (tgtFile.exists()) {
+                        def sha1Src = DigestUtils.sha1Hex(new FileInputStream(it))
+                        def sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile))
+
+                        if (sha1Src != sha1Tgt) {
+                            FileUtils.moveFile(it, Paths.get(
+                                    it.parent,
+                                    FilenameUtils.getBaseName(it.name),
+                                    sha1Src,
+                                    FilenameUtils.getExtension(it.name)).toFile())
+                        } else {
+                            tgtFile.delete()
+                        }
+                    }
+
+                    FileUtils.moveToDirectory(it, tgt, true)
+                    println("${it.absolutePath} -> ${tgt.absolutePath}")
+                }
+            }
+        }
+
+        // output page
         def sb = new StringWriter()
         MarkupBuilder html = getHtmlBase(sb)
         html.html {
@@ -109,8 +148,6 @@ class WebUI {
                 //                script(src: 'test.js', type: 'text/javascript')
             }
             body {
-                def file = new File(params['path'])
-
                 // navigator
                 div(id: ID_NAVIGATOR) {
                     List<File> listOfFiles = getNavigatorData(file.parentFile)
@@ -184,8 +221,10 @@ class WebUI {
 
                             a(class: CLASS_ACTION, href: "https://www.google.cz/search?q=${basename}", "Google",
                                     target: "_blank")
-                            a(class: CLASS_ACTION, href: "editFile?path=${file.absolutePath}&basename=${basename}",
-                                    "Edit")
+                            a(class: CLASS_ACTION, href: "editFile?path=${file.absolutePath}&basename=${basename}", "Edit")
+                            if (!file.name.startsWith(file.parentFile.name)) {
+                                a(class: CLASS_ACTION, href: ("browse?path=${file.absolutePath}&${TIDYUP}=${basename}"), "TidyUp")
+                            }
                         }
                     }
                 }
@@ -504,21 +543,20 @@ class WebUI {
                         }
 
                         // conversion with calibre
+                        def split = basename.split(/ - /, 2)
+                        String author = split[0]
                         div(class: CLASS_EDIT_FORM_SECTION) {
                             table {
                                 tr {
                                     td "Author:"
                                     td {
-                                        input(type: "text", name: FRM_AUTHOR, size: 50,
-                                                value: FilenameUtils.getBaseName(path.absolutePath))
+                                        input(type: "text", name: FRM_AUTHOR, size: 50, value: split[0])
                                     }
                                 }
                                 tr {
                                     td "Title:"
                                     td {
-                                        input(type: "text", name: FRM_TITLE, size: 50, value: StringUtils.
-                                                replace(basename, FilenameUtils.getBaseName(path.absolutePath) + " - ",
-                                                        ""))
+                                        input(type: "text", name: FRM_TITLE, size: 50, value: split[1])
                                     }
                                 }
                             }
