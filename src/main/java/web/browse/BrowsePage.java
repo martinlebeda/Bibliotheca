@@ -24,6 +24,7 @@ import org.pegdown.PegDownProcessor;
 import config.VOConfig;
 import spark.Request;
 import spark.Response;
+import tools.Tools;
 import web.AbstractPage;
 import web.VOPath;
 
@@ -100,7 +101,10 @@ public class BrowsePage extends AbstractPage {
         List<File> dirs = new ArrayList<>();
         if (StringUtils.isNotBlank(booksearch)) {
             final Collection<File> fileCollection = FileUtils.listFilesAndDirs(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-            CollectionUtils.filter(fileCollection, object -> (StringUtils.containsIgnoreCase(object.getName(), booksearch)));
+            CollectionUtils.filter(fileCollection, object ->
+                    StringUtils.containsIgnoreCase(
+                            Tools.removeDiacritics(object.getName()),
+                            Tools.removeDiacritics(booksearch)));
             dirs.addAll(fileCollection);
         } else {
             final File[] listFiles = file.listFiles();
