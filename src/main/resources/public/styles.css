@@ -1,0 +1,97 @@
+html {
+    font-family: sans-serif;
+}
+
+label{
+	width:150px;
+	display: inline-block;
+}
+
+a {
+    color: black;
+    visited: black;
+    text-decoration: none
+}
+
+.directory {
+    /*background: rgb(239, 240, 207);*/
+    /*border: 1px solid;*/
+    /*padding: 10px;*/
+    white-space: nowrap;
+    color: #555555;
+}
+
+.file {
+    background: none repeat scroll 0 0 #EFEFEF;
+    margin: 20px 100px;
+    border: 1px solid;
+    padding: 10px;
+
+}
+
+.edit-form {
+    background: none repeat scroll 0 0 #EFEFEF;
+    margin: 20px 100px;
+    border: 1px solid;
+    padding: 10px;
+}
+
+.file-cover {
+    padding: 10px;
+}
+
+.file-extension {
+    padding: 3px;
+    border-radius: 4px;
+    background: #C5F3F0;
+    border: 1px solid rgba(130, 239, 231, 0.84);
+}
+
+.file-target {
+    padding: 3px;
+    border-radius: 4px;
+    background: #BEDFBF;
+    border: 1px solid #BEDFBF;
+}
+
+.file-external_search {
+
+    padding: 3px;
+    border-radius: 4px;
+
+    background: rgba(255, 239, 215, 1);
+    border: 1px solid rgba(239, 211, 130, 0.84);
+}
+
+.mhtFiles {
+    margin: 20px 100px;
+}
+
+.editFormSection {
+    border-bottom: 1px dotted;
+    padding: 10px;
+}
+
+#directories {
+    margin: 20px 100px;
+    /*padding-left: 10px;*/
+    /*line-height: 3;*/
+    -webkit-columns: 4 150px;
+    -moz-columns: 4 150px;
+    columns: 4 150px;
+    -webkit-column-gap: 2em;
+    -moz-column-gap: 2em;
+    column-gap: 2em;
+    font-size: 12px;
+
+}
+
+#navigator {
+    margin: 20px 100px;
+    padding-left: 10px;
+}
+
+#navigator-file {
+    font-weight: bold;
+    font-size: x-large;
+}
