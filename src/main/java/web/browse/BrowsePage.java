@@ -240,16 +240,16 @@ public class BrowsePage extends AbstractPage {
 
                 if (!sha1Src.equals(sha1Tgt)) {
                     FileUtils.moveFile(fileUklid, Paths.get(
-                            fileUklid.getParent(),
+                            tgtFile.getParent(),
                             FilenameUtils.getBaseName(fileUklid.getName()),
                             sha1Src,
                             FilenameUtils.getExtension(fileUklid.getName())).toFile());
                 } else {
                     tgtFile.delete();
                 }
+            } else {
+                FileUtils.moveToDirectory(fileUklid, tgt, true);
             }
-
-            FileUtils.moveToDirectory(fileUklid, tgt, true);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

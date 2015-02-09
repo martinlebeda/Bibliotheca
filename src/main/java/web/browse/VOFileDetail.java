@@ -77,4 +77,8 @@ public class VOFileDetail {
     public String getAuthor() {
         return author;
     }
+
+    public boolean getCoverExists() {
+        return StringUtils.isNoneBlank(cover);
+    }
 }

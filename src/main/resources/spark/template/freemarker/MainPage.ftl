@@ -2,12 +2,16 @@
 <#include "component/header.ftl">
 <body>
 
-<h1>Fiction</h1>
+<div id="navigator">
+    <h1>Bibliotheca</h1>
+</div>
 
 <div id="directories">
-<#list bele as p>
-<a class="directory" href="browse?path=${p.path}">${p.name}
+    <ul style="margin: 0px">
+    <#list bele as p>
+        <li><a class="directory" href="browse?path=${p.path}">${p.name}</a></li>
     </#list>
+    </ul>
 </div>
 
 </body>

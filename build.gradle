@@ -5,7 +5,7 @@ apply plugin: 'java'
 // apply plugin: 'groovy'
 apply plugin: 'gradle-one-jar'
 
-sourceCompatibility = 1.8
+// sourceCompatibility = 1.8
 version = '0.1'
 
 buildscript {

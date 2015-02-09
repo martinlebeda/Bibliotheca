@@ -135,59 +135,61 @@ public abstract class AbstractPage {
         }
 
 
-        // generate
-        try {
-            String author = null;
-            String title = null;
-            String cover = null;
+        if (srcFile != null) {
+            // generate
+            try {
+                String author = null;
+                String title = null;
+                String cover = null;
 
-            final String[] split = StringUtils.split(FilenameUtils.getBaseName(srcFile.getName()), "-", 2);
-            if (split.length > 1) {
-                author = StringUtils.trim(split[0]);
-                title = StringUtils.trim(split[1]);
-            } else {
-                title = srcFile.getName();
+                final String[] split = StringUtils.split(FilenameUtils.getBaseName(srcFile.getName()), "-", 2);
+                if (split.length > 1) {
+                    author = StringUtils.trim(split[0]);
+                    title = StringUtils.trim(split[1]);
+                } else {
+                    title = srcFile.getName();
+                }
+
+                VOFile coverFile = getTypeFile(files, "jpg", false);
+                if (coverFile != null) {
+                    cover = coverFile.getPath();
+                }
+
+                final List<String> command = new ArrayList<>();
+                command.add(config.getConvert());
+                command.add(srcFile.getPath());
+                command.add("." + suffix);
+
+                if (srcFile.getPath().toLowerCase().endsWith(".pdb")
+                        || srcFile.getPath().toLowerCase().endsWith(".txt")) {
+                    command.add("--input-encoding=cp1250 ");
+                }
+
+                if (StringUtils.isNotBlank(cover)) {
+                    command.add("--cover");
+                    command.add(cover);
+                }
+
+                if (StringUtils.isNotBlank(author)) {
+                    command.add("--authors");
+                    command.add(author);
+                }
+
+                if (StringUtils.isNotBlank(title)) {
+                    command.add("--title");
+                    command.add(title);
+                }
+
+                ProcessBuilder builder = new ProcessBuilder(command);
+                builder.directory(new File(srcFile.getPath()).getParentFile());
+                final Process process = builder.start();
+                process.waitFor();
+
+                //            //~/bin/fixEpubJustify.sh "$TGT" && \
+                //            //~/bin/fixEpubFont.sh "$TGT"
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
             }
-
-            VOFile coverFile = getTypeFile(files, "jpg", false);
-            if (coverFile != null) {
-                cover = coverFile.getPath();
-            }
-
-            final List<String> command = new ArrayList<>();
-            command.add(config.getConvert());
-            command.add(srcFile.getPath());
-            command.add("."+suffix);
-
-            if (srcFile.getPath().toLowerCase().endsWith(".pdb")
-                    || srcFile.getPath().toLowerCase().endsWith(".txt")) {
-                command.add("--input-encoding=cp1250 ");
-            }
-
-            if (StringUtils.isNotBlank(cover)) {
-                command.add("--cover");
-                command.add(cover);
-            }
-
-            if (StringUtils.isNotBlank(author)) {
-                command.add("--authors");
-                command.add(author);
-            }
-
-            if (StringUtils.isNotBlank(title)) {
-                command.add("--title");
-                command.add(title);
-            }
-
-            ProcessBuilder builder = new ProcessBuilder(command);
-            builder.directory(new File(srcFile.getPath()).getParentFile());
-            final Process process = builder.start();
-            process.waitFor();
-
-//            //~/bin/fixEpubJustify.sh "$TGT" && \
-//            //~/bin/fixEpubFont.sh "$TGT"
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
         }
     }
 

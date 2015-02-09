@@ -4,7 +4,7 @@
 
 <#include "component/navigator.ftl">
 
-<div style=" text-align: right; padding-right: 110px; padding-left: 110px">
+<div style=" text-align: right; padding-right: 110px; padding-left: 110px; padding-bottom: 10px;">
     <a class="file-external_search" href="https://www.google.cz/search?q=${navigatorFile}" target="_blank">Google</a>
     <a class="file-external_search" href="editDir?path=${path}">Edit</a>
     <#if (isLocal) >
@@ -30,7 +30,7 @@
 </div>
 
 <#list fileDetails as p>
-<div class="file" <#if (p.cover?has_content) >style="min-height: 225px;"</#if>>
+<div class="file" <#if (p.coverExists) >style="min-height: 225px;"<#else> </#if>>
     <#if (p.cover?has_content) >
         <img class="file-cover" src="cover?path=${p.cover}" height="200" align="Left"></img>
     </#if >
