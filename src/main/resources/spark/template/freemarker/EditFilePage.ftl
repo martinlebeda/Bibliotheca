@@ -41,7 +41,8 @@
 
         <div style=" text-align: right; padding: 20px">
             <a class="file-external_search" href="https://www.google.cz/search?q=${name}" target="_blank">Google</a>
-            <input type="submit" value="save"></input>
+            <input type="submit" name="Save" value="save"></input>
+            <input type="submit" name="saveClose" value="save & close"></input>
         </div>
     </form>
 </div>
