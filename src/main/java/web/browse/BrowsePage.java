@@ -2,7 +2,10 @@ package web.browse;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +17,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -153,9 +157,34 @@ public class BrowsePage extends AbstractPage {
                     final List<VOFile> voFileList = stringListEntry.getValue();
                     final VOFile voFile = getCover(voFileList);
                     String cover = "";
+                    //noinspection ConstantConditions
+                    String nocovername = Paths.get(
+                        FilenameUtils.getFullPathNoEndSeparator(voFileList.get(0).getPath()),
+                        key + "." + NOCOVER
+                    ).toString();
+                    final Path noCoverPath = Paths.get(nocovername);
                     if (voFile != null) {
                         cover = voFile.getPath();
+                        if (Files.exists(noCoverPath)) {
+                            try {
+                                Files.delete(noCoverPath);
+                            } catch (IOException e) {
+                                ; // nothing
+                            }
+                        }
+                        // TODO Lebeda - odmazat příznak
+                    } else {
+                        if (!Files.exists(noCoverPath)) {
+                            try {
+                                FileOutputStream fos = new FileOutputStream(nocovername);
+                                fos.write("no cover".getBytes());
+                                fos.close();
+                            } catch (IOException e) {
+                                ; // nothing
+                            }
+                        }
                     }
+
                     final String desc = getDesc(voFileList);
 
                     final VOFileDetail fileDetail = new VOFileDetail(key, cover, desc);
@@ -182,6 +211,7 @@ public class BrowsePage extends AbstractPage {
                     fileDetail.getFiles().addAll(
                             CollectionUtils.select(voFileList,
                                     object -> !("jpg".equalsIgnoreCase(object.getExt())
+                                            || NOCOVER.equalsIgnoreCase(object.getExt())
                                             || "mkd".equalsIgnoreCase(object.getExt())
                                             || "mht".equalsIgnoreCase(object.getExt())
                                             || "mhtml".equalsIgnoreCase(object.getExt())
@@ -203,6 +233,14 @@ public class BrowsePage extends AbstractPage {
                     fileDetail.getDevices().addAll(config.getDevices());
 
                 });
+
+        CollectionUtils.filter(fileDetails, new Predicate<VOFileDetail>() {
+            @Override
+            public boolean evaluate(final VOFileDetail object) {
+                return object != null;
+            }
+        });
+
         if (CollectionUtils.isNotEmpty(fileDetails)) {
             try {
                 fileDetails.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));

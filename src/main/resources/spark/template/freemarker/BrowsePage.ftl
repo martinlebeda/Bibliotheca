@@ -30,10 +30,12 @@
 </div>
 
 <#list fileDetails as p>
-<div class="file" <#if (p.coverExists) >style="min-height: 225px;"<#else> </#if>>
-    <#if (p.cover?has_content) >
+    <#if p.coverExists!false >
+        <div class="file" style="min-height: 225px;">
         <img class="file-cover" src="cover?path=${p.cover}" height="200" align="Left"></img>
-    </#if >
+    <#else>
+        <div class="file">
+    </#if>
 
     <h2>${p.name}</h2>
 

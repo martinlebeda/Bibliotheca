@@ -40,6 +40,7 @@ public abstract class AbstractPage {
     protected final Response response;
 
     public static final int THUMBNAIL_SIZE = 200;
+    protected static final String NOCOVER = "nocover";
 
     public static final String FRM_SEARCH = "booksearch";
     public static final String FRM_NAME = "bookname";
@@ -241,30 +242,32 @@ public abstract class AbstractPage {
     protected VOFile getCover(final List<VOFile> files) {
         VOFile cover = getTypeFile(files, "jpg", false);
 
-        if (cover == null) {
-            cover = generateCoverByDocx(files);
-        }
+        if (getTypeFile(files, NOCOVER, false) == null) {
+            if (cover == null) {
+                cover = generateCoverByDocx(files);
+            }
 
-        if (cover == null) {
-            cover = generateCoverByEpub(files);
-        }
+            if (cover == null) {
+                cover = generateCoverByEpub(files);
+            }
 
-        if (cover == null) {
-            cover = generateCoverByPdf(files);
-        }
+            if (cover == null) {
+                cover = generateCoverByPdf(files);
+            }
 
-        if (cover == null) {
-            cover = generateCoverByDocxAnyImage(files);
-        }
-
-        if (cover == null) {
-            getDocxFromDocFile(files);
-            cover = generateCoverByDocx(files);
             if (cover == null) {
                 cover = generateCoverByDocxAnyImage(files);
             }
+
+            if (cover == null) {
+                getDocxFromDocFile(files);
+                cover = generateCoverByDocx(files);
+                if (cover == null) {
+                    cover = generateCoverByDocxAnyImage(files);
+                }
+            }
         }
-        
+
         return cover;
     }
 
