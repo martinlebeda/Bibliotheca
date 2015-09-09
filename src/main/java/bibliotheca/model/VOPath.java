@@ -1,4 +1,4 @@
-package web;
+package bibliotheca.model;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>

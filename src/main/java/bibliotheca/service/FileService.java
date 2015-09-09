@@ -1,85 +1,55 @@
-package web;
+package bibliotheca.service;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import javax.imageio.ImageIO;
-
+import bibliotheca.config.ConfigService;
+import bibliotheca.model.VOFile;
+import bibliotheca.model.VOPath;
+import bibliotheca.tools.Tools;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import config.VOConfig;
-import spark.Request;
-import spark.Response;
-import web.browse.VOFile;
-
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
-public abstract class AbstractPage {
+// TODO Lebeda - extrahovat interface
+// TODO Lebeda - pročistit
+@Service
+public class FileService {
 
-    protected final VOConfig config;
-    protected final Request request;
-    protected final Response response;
 
-    public static final int THUMBNAIL_SIZE = 200;
-    protected static final String NOCOVER = "nocover";
+//    protected final Request request;
+//    protected final Response response;
 
-    public static final String FRM_SEARCH = "booksearch";
     public static final String FRM_NAME = "bookname";
     public static final String FRM_COVER = "bookcover";
     public static final String FRM_DESCRIPTION = "bookdescription";
 
     public static final String TIDYUP = "tidyup";
-    public static final String PARAM_PATH = "path";
-    
-    public AbstractPage(final VOConfig config, final Request request, final Response response) {
-        this.config = config;
-        this.request = request;
-        this.response = response;
-    }
-
-    public abstract Map<String, Object> getModel();
 
 
-    /**
-     * Check if client coming from localhost
-     * @return true if client coming from localhost
-     */
-    protected boolean isLocalHost() {
-        final String ip = request.ip();
-        return "127.0.0.1".equals(ip);
-    }
+    @Autowired
+    private ConfigService configService;
 
-    protected HashMap<String, Object> getDefaultModel(final String title) {
-        final HashMap<String, Object> model = new HashMap<>();
-        model.put("title", title);
-        model.put("isLocal", isLocalHost());
-        return model;
-    }
-
-    protected void fillNavigatorData(final HashMap<String, Object> model,
-                                     final File file,
-                                     final boolean navigableLastFile) {
+    public void fillNavigatorData(final HashMap<String, Object> model,
+                                  final File file,
+                                  final boolean navigableLastFile) {
         final ArrayList<VOPath> navigator = new ArrayList<>();
-        if (!CollectionUtils.exists(config.getFictionPaths(), s -> s.equalsIgnoreCase(file.getAbsolutePath()))) {
+        if (!CollectionUtils.exists(configService.getConfig().getFictionPaths(), s -> s.equalsIgnoreCase(file.getAbsolutePath()))) {
             for (File navigatorFile : getNavigatorData(file.getParentFile())) {
                 navigator.add(new VOPath(navigatorFile.getName(), navigatorFile.getAbsolutePath()));
             }
@@ -90,7 +60,7 @@ public abstract class AbstractPage {
         model.put("navigableLastFile", navigableLastFile);
     }
 
-    protected File[] refreshFiles(final String basename, final File file, List<VOFile> voFileList) {
+    public File[] refreshFiles(final String basename, final File file, List<VOFile> voFileList) {
         final File[] listFiles;
         listFiles = file.listFiles((dir, name1) -> name1.startsWith(FilenameUtils.getBaseName(basename)));
         voFileList.clear();
@@ -98,7 +68,7 @@ public abstract class AbstractPage {
         return listFiles;
     }
 
-    protected VOFile getTypeFile(List<VOFile> files, final String suffix, final boolean generate) {
+    public VOFile getTypeFile(List<VOFile> files, final String suffix, final boolean generate) {
         final List<VOFile> select = new ArrayList<>();
         select.addAll(CollectionUtils.select(files, voFile -> voFile.getExt().equalsIgnoreCase(suffix)));
         VOFile voFile = null;
@@ -119,16 +89,36 @@ public abstract class AbstractPage {
 
     private void generateFile(final List<VOFile> files, final String suffix) {
         VOFile srcFile = getTypeFile(files, "htmlz", false);
-        if (srcFile == null) { srcFile = getTypeFile(files, "epub", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "mobi", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "azw3", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "azw", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "rtf", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "odt", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "docx", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "prc", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "pdb", false); }
-        if (srcFile == null) { srcFile = getTypeFile(files, "txt", false); }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "epub", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "mobi", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "azw3", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "azw", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "rtf", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "odt", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "docx", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "prc", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "pdb", false);
+        }
+        if (srcFile == null) {
+            srcFile = getTypeFile(files, "txt", false);
+        }
 
         // podpota pro doc
         if (srcFile == null) {
@@ -157,7 +147,7 @@ public abstract class AbstractPage {
                 }
 
                 final List<String> command = new ArrayList<>();
-                command.add(config.getConvert());
+                command.add(configService.getConfig().getConvert());
                 command.add(srcFile.getPath());
                 command.add("." + suffix);
 
@@ -200,7 +190,7 @@ public abstract class AbstractPage {
         if (doc != null) {
             try {
                 final List<String> command = new ArrayList<>();
-                command.add(config.getLibreoffice());
+                command.add(configService.getConfig().getLibreoffice());
                 command.add("--headless");
                 command.add("--convert-to");
                 command.add("docx");
@@ -227,7 +217,7 @@ public abstract class AbstractPage {
         String parentName = file.getAbsolutePath();
         while (parentName.length() > 1) {
             final String finalParentName = parentName;
-            Boolean end = CollectionUtils.exists(config.getFictionPaths(), s -> s.equalsIgnoreCase(finalParentName));
+            Boolean end = CollectionUtils.exists(configService.getConfig().getFictionPaths(), s -> s.equalsIgnoreCase(finalParentName));
             File parent = new File(parentName);
             parentFiles.add(parent);
             parentName = parent.getParent();
@@ -242,7 +232,7 @@ public abstract class AbstractPage {
     protected VOFile getCover(final List<VOFile> files) {
         VOFile cover = getTypeFile(files, "jpg", false);
 
-        if (getTypeFile(files, NOCOVER, false) == null) {
+        if (getTypeFile(files, Tools.NOCOVER, false) == null) {
             if (cover == null) {
                 cover = generateCoverByDocx(files);
             }
@@ -293,7 +283,7 @@ public abstract class AbstractPage {
                 if (entry != null) {
                     InputStream is = zip.getInputStream(entry);
 
-                    String thumbnailName = getThumbnailName(file);
+                    String thumbnailName = Tools.getThumbnailName(file);
                     IOUtils.copy(is, new FileOutputStream(thumbnailName));
                     result = new VOFile(thumbnailName);
                 }
@@ -314,7 +304,7 @@ public abstract class AbstractPage {
                 PDPage page = (PDPage) document.getDocumentCatalog().getAllPages().get(0);
                 if (page != null) {
                     BufferedImage image = page.convertToImage();
-                    result = new VOFile(getThumbnailName(file));
+                    result = new VOFile(Tools.getThumbnailName(file));
                     ImageIO.write(image, "jpg", new File(result.getPath()));
                 }
             }
@@ -346,7 +336,7 @@ public abstract class AbstractPage {
                 if (entry != null) {
                     InputStream is = zip.getInputStream(entry);
 
-                    String thumbnailName = getThumbnailName(file);
+                    String thumbnailName = Tools.getThumbnailName(file);
                     IOUtils.copy(is, new FileOutputStream(thumbnailName));
                     result = new VOFile(thumbnailName);
                 }
@@ -377,7 +367,7 @@ public abstract class AbstractPage {
                 if (entry != null) {
                     InputStream is = zip.getInputStream(entry);
 
-                    String thumbnailName = getThumbnailName(file);
+                    String thumbnailName = Tools.getThumbnailName(file);
                     IOUtils.copy(is, new FileOutputStream(thumbnailName));
                     result = new VOFile(thumbnailName);
                 }
@@ -388,7 +378,4 @@ public abstract class AbstractPage {
         return result;
     }
 
-    private static String getThumbnailName(File file) {
-        return file.getParent() + File.separator + FilenameUtils.getBaseName(file.getAbsolutePath()) + ".jpg";
-    }
 }

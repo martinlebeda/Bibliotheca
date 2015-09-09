@@ -1,20 +1,10 @@
-package web.browse;
+package bibliotheca.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import bibliotheca.config.ConfigService;
+import bibliotheca.tools.Tools;
+import bibliotheca.model.VOPath;
+import bibliotheca.model.VOFile;
+import bibliotheca.model.VOFileDetail;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
@@ -24,69 +14,71 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.pegdown.PegDownProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import config.VOConfig;
-import spark.Request;
-import spark.Response;
-import tools.Tools;
-import web.AbstractPage;
-import web.VOPath;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 15.12.14
  */
-public class BrowsePage extends AbstractPage {
+@Service
+public class BrowsePageService {
 
-    public BrowsePage(final VOConfig config, final Request request, final Response response) {
-        super(config, request, response);
-    }
+    @Autowired
+    private FileService fileService;
 
-    @Override
-    public Map<String, Object> getModel() {
-        final HashMap<String, Object> model = getDefaultModel("Bibliotheca - Browse fiction");
+    @Autowired
+    private ConfigService configService;
 
-        File file = new File(request.queryMap(PARAM_PATH).value());
-        model.put(PARAM_PATH, file.getAbsolutePath());
+    public Map<String, Object> getModel(String path, final String booksearch, final String devicePath, final String target, final String tidyup, final String delete, final String basename) {
+        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
+
+        File file = new File(path);
+        model.put(Tools.PARAM_PATH, file.getAbsolutePath());
 
         // tidyup some file
-        String tidyUp = request.queryMap(TIDYUP).value();
-        if (StringUtils.isNoneBlank(tidyUp)) {
-            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(tidyUp));
+        if (StringUtils.isNoneBlank(tidyup)) {
+            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(tidyup));
             Arrays.stream(listFiles).forEach(this::tidyUp);
         }
 
         // delete files
-        String delete = request.queryMap("delete").value();
         if (StringUtils.isNoneBlank(delete)) {
             final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(delete));
             Arrays.stream(listFiles).forEach(File::delete);
         }
 
         // generate
-        String basenameFrm = request.queryMap("basename").value();
-        String target = request.queryMap("target").value();
         if (StringUtils.isNotBlank(target)) {
-            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(basenameFrm));
+            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(basename));
             List<VOFile> fileList = Arrays.stream(listFiles)
                     .map(file1 -> new VOFile(file1.getAbsolutePath()))
                     .collect(Collectors.toList());
 
-            if (getTypeFile(fileList, target, false) == null) {
-                getTypeFile(fileList, target, true);
+            if (fileService.getTypeFile(fileList, target, false) == null) {
+                fileService.getTypeFile(fileList, target, true);
             }
         }
 
         // to device
-        String devicePath = request.queryMap("devicePath").value();
         if (StringUtils.isNotBlank(devicePath)) {
-            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(basenameFrm));
+            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(basename));
             List<VOFile> fileList = Arrays.stream(listFiles)
                     .map(file1 -> new VOFile(file1.getAbsolutePath()))
                     .collect(Collectors.toList());
 
-            final VOFile voFile = getTypeFile(fileList, target, false);
+            final VOFile voFile = fileService.getTypeFile(fileList, target, false);
             if (voFile != null) {
                 try {
                     FileUtils.copyFileToDirectory(new File(voFile.getPath()), new File(devicePath));
@@ -97,11 +89,10 @@ public class BrowsePage extends AbstractPage {
             }
         }
 
-        fillNavigatorData(model, file, false);
+        fileService.fillNavigatorData(model, file, false);
 
         // search
-        String booksearch = request.queryMap(FRM_SEARCH).value();
-        model.put(FRM_SEARCH, booksearch);
+        model.put(Tools.FRM_SEARCH, booksearch);
         List<File> dirs = new ArrayList<>();
         if (StringUtils.isNotBlank(booksearch)) {
             final Collection<File> fileCollection = FileUtils.listFilesAndDirs(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
@@ -140,11 +131,11 @@ public class BrowsePage extends AbstractPage {
                         voPath.getPath().toLowerCase().endsWith("mht")
                                 || voPath.getPath().toLowerCase().endsWith("mhtml")))
                 .forEachOrdered(voPath -> {
-                    String basename = FilenameUtils.getBaseName(voPath.getName());
-                    if (!fileMap.containsKey(basename)) {
-                        fileMap.put(basename, new ArrayList<>());
+                    String basenamePath = FilenameUtils.getBaseName(voPath.getName());
+                    if (!fileMap.containsKey(basenamePath)) {
+                        fileMap.put(basenamePath, new ArrayList<>());
                     }
-                    fileMap.get(basename).add(new VOFile(
+                    fileMap.get(basenamePath).add(new VOFile(
                             FilenameUtils.getExtension(voPath.getPath()),
                             voPath.getName(), voPath.getPath()));
 
@@ -155,12 +146,12 @@ public class BrowsePage extends AbstractPage {
                 .forEach(stringListEntry -> {
                     final String key = stringListEntry.getKey();
                     final List<VOFile> voFileList = stringListEntry.getValue();
-                    final VOFile voFile = getCover(voFileList);
+                    final VOFile voFile = fileService.getCover(voFileList);
                     String cover = "";
                     //noinspection ConstantConditions
                     String nocovername = Paths.get(
                         FilenameUtils.getFullPathNoEndSeparator(voFileList.get(0).getPath()),
-                        key + "." + NOCOVER
+                        key + "." + Tools.NOCOVER
                     ).toString();
                     final Path noCoverPath = Paths.get(nocovername);
                     if (voFile != null) {
@@ -211,7 +202,7 @@ public class BrowsePage extends AbstractPage {
                     fileDetail.getFiles().addAll(
                             CollectionUtils.select(voFileList,
                                     object -> !("jpg".equalsIgnoreCase(object.getExt())
-                                            || NOCOVER.equalsIgnoreCase(object.getExt())
+                                            || Tools.NOCOVER.equalsIgnoreCase(object.getExt())
                                             || "mkd".equalsIgnoreCase(object.getExt())
                                             || "mht".equalsIgnoreCase(object.getExt())
                                             || "mhtml".equalsIgnoreCase(object.getExt())
@@ -225,12 +216,12 @@ public class BrowsePage extends AbstractPage {
                     // TODO Lebeda - doc && !docx -> docx
                     // !suf -> suff, epub, fb2, mobi
                     Arrays.stream(new String[] {"epub", "fb2", "mobi"}).forEach(s -> {
-                        if (getTypeFile(voFileList, s, false) == null) {
+                        if (fileService.getTypeFile(voFileList, s, false) == null) {
                             fileDetail.getTargets().add(s);
                         }
                     });
 
-                    fileDetail.getDevices().addAll(config.getDevices());
+                    fileDetail.getDevices().addAll(configService.getConfig().getDevices());
 
                 });
 
@@ -264,6 +255,7 @@ public class BrowsePage extends AbstractPage {
 
 
 
+    // TODO Lebeda - do service
     private void tidyUp(final File fileUklid) {
         try {
             final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
@@ -293,14 +285,16 @@ public class BrowsePage extends AbstractPage {
         }
     }
 
+    // TODO Lebeda - do service
     private String getTgtPathByAuthor(String author) {
         String firstLetter = StringUtils.substring(author, 0, 1).toUpperCase();
-        File beleTgt = new File(config.getFictionArchive());
+        File beleTgt = new File(configService.getConfig().getFictionArchive());
         return Paths.get(beleTgt.getAbsolutePath(), firstLetter, author).toString();
     }
 
+    // TODO Lebeda - do service
     private String getDesc(final List<VOFile> files) {
-        VOFile readme = getTypeFile(files, "mkd", false);
+        VOFile readme = fileService.getTypeFile(files, "mkd", false);
         final String html;
         if (readme != null) {
             final PegDownProcessor pdp = new PegDownProcessor();

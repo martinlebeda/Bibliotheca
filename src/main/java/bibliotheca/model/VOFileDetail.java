@@ -1,11 +1,11 @@
-package web.browse;
+package bibliotheca.model;
+
+import bibliotheca.config.VODevice;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
-import config.VODevice;
 
 
 /**

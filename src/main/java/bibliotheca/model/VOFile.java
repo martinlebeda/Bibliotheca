@@ -1,4 +1,4 @@
-package web.browse;
+package bibliotheca.model;
 
 import org.apache.commons.io.FilenameUtils;
 

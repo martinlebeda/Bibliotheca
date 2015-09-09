@@ -1,96 +1,91 @@
-// import java.nio.file.Paths
-
-
-apply plugin: 'java'
-// apply plugin: 'groovy'
-apply plugin: 'gradle-one-jar'
-
-// sourceCompatibility = 1.8
-version = '0.1'
-
 buildscript {
+    ext {
+        springBootVersion = '1.2.5.RELEASE'
+    }
     repositories {
         mavenCentral()
-        maven { url "https://oss.sonatype.org/content/groups/public"}
     }
     dependencies {
-        classpath 'com.github.rholder:gradle-one-jar:1.0.4'
-        classpath 'com.github.townsfolk:gradle-release:1.2'
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}") 
+        classpath("io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE")
+        classpath "com.github.houbie:lesscss-gradle-plugin:1.0.3-less-1.7.0" // lesscss
+        classpath 'net.researchgate:gradle-release:2.1.2' // release
     }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'spring-boot' 
+apply plugin: 'io.spring.dependency-management' 
+apply plugin: "lesscss" // lesscss
+apply plugin: 'net.researchgate.release' // release
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+jar {
+    baseName = 'bibliotheca'
+    // version = '0.0.1-SNAPSHOT' // release
 }
 
 repositories {
     mavenCentral()
 }
 
+
+// begin lesscss
+lessc {
+    sourceDir "src/main/resources/less"
+    include "**/*.less"
+    destinationDir = "$buildDir/resources/main/static/css"
+}
+tasks.processResources.dependsOn(lessc)
+// end lesscss
+
+task localDeploy(dependsOn: build, type: Copy) {
+    from("$buildDir/libs") {
+        include "**/*-${version}.jar"
+    }
+
+    into "/home/martin/bin"
+}
+
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-//    compile 'org.codehaus.groovy:groovy-all:2.3.4'
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    compile("org.springframework.boot:spring-boot-starter-freemarker")
 
-//    compile 'org.apache.lucene:lucene-analyzers-common:4.9.0'
-//    compile 'org.apache.lucene:lucene-queryparser:4.9.0'
-//    compile 'org.apache.lucene:lucene-core:4.9.0'
-////    compile 'org.apache.lucene:lucene-codecs:4.9.0'
+    compile("org.springframework.boot:spring-boot-starter-web")
+//    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+//    runtime("com.h2database:h2")
 
-    compile 'ch.qos.logback:logback-classic:1.1.2'
+    testCompile("org.springframework.boot:spring-boot-starter-test")
 
-    compile 'commons-cli:commons-cli:1.2'
-    compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile('org.apache.commons:commons-lang3:3.4')
+    compile('commons-io:commons-io:2.4')
+    compile('org.apache.commons:commons-collections4:4.0')
     compile 'commons-codec:commons-codec:1.10'
-    compile 'commons-io:commons-io:2.4'
-    compile 'org.apache.commons:commons-collections4:4.0'
 
     compile 'org.imgscalr:imgscalr-lib:4.2'
     compile 'org.pegdown:pegdown:1.4.2'
-
     compile 'org.apache.pdfbox:pdfbox:1.8.7'
 
-    compile 'org.mikeneck.graffiti:mike-graffiti-core:1.0'
-
-    compile 'org.mikeneck.graffiti:mike-graffiti-core:1.0'
-
-    compile 'org.eclipse.jetty:jetty-server:9.2.5.v20141112'
-    compile 'org.eclipse.jetty:jetty-webapp:9.2.5.v20141112'
-
-    // java po novu
-    compile 'com.sparkjava:spark-core:2.1'
-    compile 'com.sparkjava:spark-template-freemarker:2.0.0'
-    compile 'org.freemarker:freemarker:2.3.21'
-
-
-    compile 'org.yaml:snakeyaml:1.14'
-    compile 'org.rendersnake:rendersnake:1.8'
     compile 'org.simpleframework:simple-xml:2.7.1'
-    compile 'org.slf4j:slf4j-simple:1.7.5'
     compile 'com.j256.simplemagic:simplemagic:1.6'
 
-//    compile 'org.mapdb:mapdb:1.0.6'
+    compile 'org.webjars:jquery:2.1.4'
+    compile 'org.webjars:bootstrap:3.3.5'
+    compile 'org.webjars:font-awesome:4.4.0'
 }
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'Bibliotheca' // TODO Lebeda - MainClass
-        attributes 'Implementation-Title': 'Simple locate files', 'Implementation-Version': version
+
+eclipse {
+    classpath {
+         containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+         containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
     }
 }
 
-// Configure the oneJar task
-task oneJar(type: OneJar) {
-    mainClass = 'Main' // TODO Lebeda - MainClass
-    additionalDir = file('src/main/resources/public')
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
 }
-
-// TODO Lebeda - pack resources into OneJar
-//task buildOneJar(type: Zip, dependsOn: OneJar) {
-//    from 'src/main/resources/public'
-//    archivePath = "build/libs/Bibliotheca-${version}-standalone.jar"
-//}
-
-//task localDeploy(type: Copy, dependsOn: oneJar) {
-//    from "build/libs/Bibliotheca-${version}-standalone.jar"
-//    into { Paths.get(System.getProperty("user.home"), "bin").toString() }
-//}
-
-// TODO Lebeda - release with numbering
-// TODO Lebeda - distribution package with bath or shell script
-// TODO Lebeda - deploy to public directo

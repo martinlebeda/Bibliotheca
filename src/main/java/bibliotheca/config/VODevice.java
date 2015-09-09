@@ -1,4 +1,4 @@
-package config;
+package bibliotheca.config;
 
 import org.simpleframework.xml.Element;
 
