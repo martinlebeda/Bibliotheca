@@ -73,6 +73,8 @@ dependencies {
     compile 'org.simpleframework:simple-xml:2.7.1'
     compile 'com.j256.simplemagic:simplemagic:1.6'
 
+    compile('org.jsoup:jsoup:1.8.3')
+
     compile 'org.webjars:jquery:2.1.4'
     compile 'org.webjars:bootstrap:3.3.5'
     compile 'org.webjars:font-awesome:4.4.0'

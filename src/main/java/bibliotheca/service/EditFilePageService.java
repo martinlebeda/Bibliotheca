@@ -5,12 +5,15 @@ import bibliotheca.tools.Tools;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,10 +26,12 @@ import java.util.stream.Collectors;
 @Service
 public class EditFilePageService {
 
+    public static final String METADATA_KEY_DATABAZEKNIH_CZ = "dbknih";
     @Autowired
     private FileService fileService;
 
-    public Map<String, Object> getModel(String path, String basename, final String frmName, final String frmCover, final String frmDescription) {
+    public Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
+                                        String loadImage, String loadDescription, String loadAll, String loadAllClose) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - edit file");
 
         File file = new File(path);
@@ -47,6 +52,59 @@ public class EditFilePageService {
             // refresh names
             basename = frmName;
             listFiles = fileService.refreshFiles(basename, file, voFileList);
+        }
+
+        // read metadata
+        Map<String, String> metadata = loadMetaData(path, basename);
+        if (!metadata.containsKey(METADATA_KEY_DATABAZEKNIH_CZ)) {
+            metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, "");
+        }
+
+        // set matadata
+        if (StringUtils.isNotBlank(dbknih) && !dbknih.equals(metadata.get(METADATA_KEY_DATABAZEKNIH_CZ))) {
+            metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, dbknih);
+
+            writeMetaData(path, basename, metadata);
+        }
+
+        // save metadata
+        model.putAll(metadata);
+
+
+        // TODO Lebeda - načtení a vyplnění z DBKnih
+        if ((StringUtils.isNotBlank(loadImage)
+                || StringUtils.isNotBlank(loadDescription)
+                || StringUtils.isNotBlank(loadAll)
+                || StringUtils.isNotBlank(loadAllClose)
+        ) && StringUtils.isNotBlank(metadata.get(METADATA_KEY_DATABAZEKNIH_CZ))) {
+            try {
+
+                Document doc = Jsoup.connect(metadata.get(METADATA_KEY_DATABAZEKNIH_CZ)).get();
+
+                Elements elements;
+
+                if (StringUtils.isNotBlank(loadImage)
+                        || StringUtils.isNotBlank(loadAll)
+                        || StringUtils.isNotBlank(loadAllClose)) {
+                    elements = doc.select("img.kniha_img"); // obal knihy
+                    for (Element element : elements) {
+                        frmCover = element.attr("src");
+                    }
+                }
+
+                if (StringUtils.isNotBlank(loadDescription)
+                        || StringUtils.isNotBlank(loadAll)
+                        || StringUtils.isNotBlank(loadAllClose)) {
+                    elements = doc.select("#biall"); // obal knihy
+                    for (Element element : elements) {
+                        frmCover = element.attr("src");
+                        frmDescription = element.text().replace("méně textu", "");
+                    }
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();  // TODO Lebeda - implementova
+            }
         }
 
         // download new cower if need
@@ -77,6 +135,30 @@ public class EditFilePageService {
         return model;
     }
 
+    private static void writeMetaData(String path, String basename, Map<String, String> metadata) {
+        try {
+            Yaml yaml = new Yaml();
+            Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
+            yaml.dump(metadata, writer);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static Map<String, String> loadMetaData(String path, String basename) {
+        try {
+            final File file = Paths.get(path, basename + ".yaml").toFile();
+            if (file.exists()) {
+                InputStream input = new FileInputStream(file);
+                Yaml yaml = new Yaml();
+                return (Map<String, String>) yaml.load(input);
+            } else {
+                return new HashMap<>();
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
     private String getRawDesc(final List<VOFile> files) {
         VOFile readme = fileService.getTypeFile(files, "mkd", false);

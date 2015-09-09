@@ -104,15 +104,19 @@ public class MainControler {
             @RequestParam("path") String path,
             @RequestParam(value = "saveClose", required = false) String saveClose,
             @RequestParam(value = "basename", required = false) String basename,
+            @RequestParam(value = "dbknih", required = false) String dbknih,
             @RequestParam(value = "bookname", required = false) String frmName,
             @RequestParam(value = "bookcover", required = false) String frmCover,
             @RequestParam(value = "bookdescription", required = false) String frmDescription,
+            @RequestParam(value = "loadImage", required = false) String loadImage,
+            @RequestParam(value = "loadDescription", required = false) String loadDescription,
+            @RequestParam(value = "loadAll", required = false) String loadAll,
+            @RequestParam(value = "loadAllClose", required = false) String loadAllClose,
             final Model model) {
-        final Map<String, Object> oldModel = editFilePageService.getModel(path, basename, frmName, frmCover, frmDescription);
+        final Map<String, Object> oldModel = editFilePageService.getModel(path, basename, frmName, frmCover, frmDescription, dbknih, loadImage, loadDescription, loadAll, loadAllClose);
         model.addAllAttributes(oldModel);
 
-//        if (BooleanUtils.isTrue(saveClose)) {
-        if (StringUtils.isNotBlank(saveClose)) {
+        if (StringUtils.isNotBlank(saveClose) || StringUtils.isNotBlank(loadAllClose)) {
             return "redirect:browse?path="+ URLEncoder.encode(path);
         }
 
