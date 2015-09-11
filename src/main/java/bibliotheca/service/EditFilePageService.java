@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,12 +27,11 @@ import java.util.stream.Collectors;
 @Service
 public class EditFilePageService {
 
-    public static final String METADATA_KEY_DATABAZEKNIH_CZ = "dbknih";
     @Autowired
     private FileService fileService;
 
     public Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
-                                        String loadImage, String loadDescription, String loadAll, String loadAllClose) {
+                                        String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - edit file");
 
         File file = new File(path);
@@ -54,15 +54,36 @@ public class EditFilePageService {
             listFiles = fileService.refreshFiles(basename, file, voFileList);
         }
 
-        // read metadata
-        Map<String, String> metadata = loadMetaData(path, basename);
-        if (!metadata.containsKey(METADATA_KEY_DATABAZEKNIH_CZ)) {
-            metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, "");
+        String bookname = StringUtils.replacePattern(basename, ".*- *", "");
+        model.put("bookname", bookname);
+
+        // try search automatic in databaze knih
+        if (StringUtils.isNotBlank(tryDbKnih)) {
+            try {
+
+                Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q="+ URLEncoder.encode(bookname) + "&hledat=&stranka=search").get();
+
+                Elements elements;
+                elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong"); // obal knihy
+
+                if (elements.size() == 1) {
+                    for (Element element : elements) {
+                        dbknih = "http://www.databazeknih.cz/" + element.attr("href");
+                        loadDescription = dbknih;
+                    }
+                }
+
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
         }
 
+        // read metadata
+        Map<String, String> metadata = Tools.getStringStringMap(path, basename);
+
         // set matadata
-        if (StringUtils.isNotBlank(dbknih) && !dbknih.equals(metadata.get(METADATA_KEY_DATABAZEKNIH_CZ))) {
-            metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, dbknih);
+        if (StringUtils.isNotBlank(dbknih) && !dbknih.equals(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
+            metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbknih);
 
             writeMetaData(path, basename, metadata);
         }
@@ -71,15 +92,15 @@ public class EditFilePageService {
         model.putAll(metadata);
 
 
-        // TODO Lebeda - načtení a vyplnění z DBKnih
+        // load and fill from DBKnih
         if ((StringUtils.isNotBlank(loadImage)
                 || StringUtils.isNotBlank(loadDescription)
                 || StringUtils.isNotBlank(loadAll)
                 || StringUtils.isNotBlank(loadAllClose)
-        ) && StringUtils.isNotBlank(metadata.get(METADATA_KEY_DATABAZEKNIH_CZ))) {
+        ) && StringUtils.isNotBlank(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
             try {
 
-                Document doc = Jsoup.connect(metadata.get(METADATA_KEY_DATABAZEKNIH_CZ)).get();
+                Document doc = Jsoup.connect(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).get();
 
                 Elements elements;
 
@@ -97,13 +118,18 @@ public class EditFilePageService {
                         || StringUtils.isNotBlank(loadAllClose)) {
                     elements = doc.select("#biall"); // obal knihy
                     for (Element element : elements) {
-                        frmCover = element.attr("src");
                         frmDescription = element.text().replace("méně textu", "");
+                    }
+                    if (StringUtils.isBlank(frmDescription)) {
+                        elements = doc.select("#bdetail_rest > p"); // obal knihy
+                        for (Element element : elements) {
+                            frmDescription = element.text().replace("méně textu", "");
+                        }
                     }
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();  // TODO Lebeda - implementova
+                throw new IllegalStateException(e);
             }
         }
 
@@ -140,21 +166,6 @@ public class EditFilePageService {
             Yaml yaml = new Yaml();
             Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
             yaml.dump(metadata, writer);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private static Map<String, String> loadMetaData(String path, String basename) {
-        try {
-            final File file = Paths.get(path, basename + ".yaml").toFile();
-            if (file.exists()) {
-                InputStream input = new FileInputStream(file);
-                Yaml yaml = new Yaml();
-                return (Map<String, String>) yaml.load(input);
-            } else {
-                return new HashMap<>();
-            }
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

@@ -15,6 +15,7 @@ import java.util.List;
 public class VOFileDetail {
     private final String name;
     private final String cover;
+    private final String dbknihUrl;
     private final List<VOFile> files = new ArrayList<>();
     private final String desc;
     private final List<String> targets = new ArrayList<>();
@@ -24,10 +25,11 @@ public class VOFileDetail {
     private String targetPath = "";
     private String author;
 
-    public VOFileDetail(final String name, final String cover, final String desc) {
+    public VOFileDetail(final String name, final String cover, final String desc, final String dbknihUrl) {
         this.desc = desc;
         this.cover = StringUtils.defaultString(cover);
         this.name = StringUtils.defaultString(name);
+        this.dbknihUrl = dbknihUrl;
     }
 
     public List<String> getTargets() {
@@ -80,5 +82,17 @@ public class VOFileDetail {
 
     public boolean getCoverExists() {
         return StringUtils.isNoneBlank(cover);
+    }
+
+    public String getDbknihUrl() {
+        return dbknihUrl;
+    }
+
+    public boolean getDbknihUrlExists() {
+        return StringUtils.isNoneBlank(dbknihUrl);
+    }
+
+    public String getBookname() {
+        return StringUtils.replacePattern(name, ".*- *", "");
     }
 }

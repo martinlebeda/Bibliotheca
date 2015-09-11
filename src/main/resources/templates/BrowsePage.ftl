@@ -52,7 +52,13 @@
     </#list>
 
     <a class="file-external_search" href="https://www.google.cz/search?q=${p.name}" target="_blank">Google</a>
-    <a class="file-external_search" href="http://www.databazeknih.cz/search?q=${p.name}&hledat=&stranka=search" target="_blank">DatabázeKnih</a>
+    <a class="file-external_search"
+       <#if p.dbknihUrlExists!false>
+            href="${p.dbknihUrl}"
+       <#else>
+            href="http://www.databazeknih.cz/search?q=${p.bookname}&hledat=&stranka=search"
+       </#if>
+       target="_blank">DatabázeKnih</a>
     <a class="file-external_search" href="view${path}/${p.name}.htmlz/pack/index.html" target="_blank">View</a>
     <a class="file-external_search" href="editFile?path=${path}&amp;basename=${p.name}">Edit</a>
 

@@ -104,6 +104,7 @@ public class MainControler {
             @RequestParam("path") String path,
             @RequestParam(value = "saveClose", required = false) String saveClose,
             @RequestParam(value = "basename", required = false) String basename,
+            @RequestParam(value = "tryDbKnih", required = false) String tryDbKnih,
             @RequestParam(value = "dbknih", required = false) String dbknih,
             @RequestParam(value = "bookname", required = false) String frmName,
             @RequestParam(value = "bookcover", required = false) String frmCover,
@@ -113,7 +114,8 @@ public class MainControler {
             @RequestParam(value = "loadAll", required = false) String loadAll,
             @RequestParam(value = "loadAllClose", required = false) String loadAllClose,
             final Model model) {
-        final Map<String, Object> oldModel = editFilePageService.getModel(path, basename, frmName, frmCover, frmDescription, dbknih, loadImage, loadDescription, loadAll, loadAllClose);
+        final Map<String, Object> oldModel = editFilePageService.getModel(path, basename, frmName, frmCover, frmDescription,
+                dbknih, loadImage, loadDescription, loadAll, loadAllClose, tryDbKnih);
         model.addAllAttributes(oldModel);
 
         if (StringUtils.isNotBlank(saveClose) || StringUtils.isNotBlank(loadAllClose)) {

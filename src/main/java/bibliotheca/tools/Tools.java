@@ -6,10 +6,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -17,6 +16,7 @@ import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -29,6 +29,7 @@ public class Tools {
     public static final String NOCOVER = "nocover";
     public static final String PARAM_PATH = "path";
     public static final String FRM_SEARCH = "booksearch";
+    public static final String METADATA_KEY_DATABAZEKNIH_CZ = "dbknih";
 
     public static String removeDiacritics(String s) {
         return Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
@@ -145,5 +146,28 @@ public class Tools {
                 throw new IllegalStateException(e);
             }
         });
+    }
+
+    public static Map<String, String> loadMetaData(String path, String basename) {
+        try {
+            final File file = Paths.get(path, basename + ".yaml").toFile();
+            if (file.exists()) {
+                InputStream input = new FileInputStream(file);
+                Yaml yaml = new Yaml();
+                return (Map<String, String>) yaml.load(input);
+            } else {
+                return new HashMap<>();
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static Map<String, String> getStringStringMap(String path, String basename) {
+        Map<String, String> metadata = loadMetaData(path, basename);
+        if (!metadata.containsKey(METADATA_KEY_DATABAZEKNIH_CZ)) {
+            metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, "");
+        }
+        return metadata;
     }
 }

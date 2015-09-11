@@ -142,7 +142,7 @@ public class BrowsePageService {
                 });
 
         List<VOFileDetail> fileDetails = new ArrayList<>();
-        fileMap.entrySet().parallelStream()
+        fileMap.entrySet().stream()
                 .forEach(stringListEntry -> {
                     final String key = stringListEntry.getKey();
                     final List<VOFile> voFileList = stringListEntry.getValue();
@@ -178,7 +178,9 @@ public class BrowsePageService {
 
                     final String desc = getDesc(voFileList);
 
-                    final VOFileDetail fileDetail = new VOFileDetail(key, cover, desc);
+                    Map<String, String> metadata = Tools.getStringStringMap(path, FilenameUtils.getBaseName(voFileList.get(0).getName()));
+
+                    final VOFileDetail fileDetail = new VOFileDetail(key, cover, desc, metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ));
 
                     final String name = file.getName();
                     if (!key.startsWith(name)) {
@@ -205,6 +207,7 @@ public class BrowsePageService {
                                             || Tools.NOCOVER.equalsIgnoreCase(object.getExt())
                                             || "mkd".equalsIgnoreCase(object.getExt())
                                             || "mht".equalsIgnoreCase(object.getExt())
+                                            || "yaml".equalsIgnoreCase(object.getExt())
                                             || "mhtml".equalsIgnoreCase(object.getExt())
                                             || "htmlz".equalsIgnoreCase(object.getExt())
                                     )

@@ -36,6 +36,9 @@ repositories {
 
 // begin lesscss
 lessc {
+    options.sourceMap = true
+
+
     sourceDir "src/main/resources/less"
     include "**/*.less"
     destinationDir = "$buildDir/resources/main/static/css"
