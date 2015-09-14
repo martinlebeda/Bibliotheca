@@ -59,6 +59,10 @@
             href="http://www.databazeknih.cz/search?q=${p.bookname}&hledat=&stranka=search"
        </#if>
        target="_blank">DatabázeKnih</a>
+
+    <#if !p.dbknihUrlExists!false>
+        <a class="file-external_search" href="browse?path=${path}&amp;tryDB=${p.name}">TryDB</a>
+    </#if>
     <a class="file-external_search" href="view${path}/${p.name}.htmlz/pack/index.html" target="_blank">View</a>
     <a class="file-external_search" href="editFile?path=${path}&amp;basename=${p.name}">Edit</a>
 

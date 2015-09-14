@@ -6,10 +6,16 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Paths;
@@ -169,5 +175,58 @@ public class Tools {
             metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, "");
         }
         return metadata;
+    }
+
+    public static String getDBKnihDescription(Document doc) {
+        String frmDescription = "";
+        Elements elements;
+        elements = doc.select("#biall");
+        for (Element element : elements) {
+            frmDescription = element.text().replace("méně textu", "");
+        }
+        if (StringUtils.isBlank(frmDescription)) {
+            elements = doc.select("#bdetail_rest > p");
+            for (Element element : elements) {
+                frmDescription = element.text().replace("méně textu", "");
+            }
+        }
+        if (StringUtils.isBlank(frmDescription)) {
+            elements = doc.select("#bdetail_rest_mid > p");
+            for (Element element : elements) {
+                frmDescription = element.text().replace("méně textu", "");
+            }
+        }
+        return frmDescription;
+    }
+
+    public static String getAutomaticDBKnihUrl(String bookname) {
+        String dbknih = "";
+        try {
+
+            Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").get();
+
+            Elements elements;
+            elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong");
+
+            if (elements.size() == 1) {
+                for (Element element : elements) {
+                    dbknih = "http://www.databazeknih.cz/" + element.attr("href");
+                }
+            }
+
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return dbknih;
+    }
+
+    public static void writeMetaData(String path, String basename, Map<String, String> metadata) {
+        try {
+            Yaml yaml = new Yaml();
+            Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
+            yaml.dump(metadata, writer);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

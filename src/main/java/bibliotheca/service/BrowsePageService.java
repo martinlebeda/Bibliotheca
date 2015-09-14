@@ -1,10 +1,10 @@
 package bibliotheca.service;
 
 import bibliotheca.config.ConfigService;
-import bibliotheca.tools.Tools;
-import bibliotheca.model.VOPath;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
+import bibliotheca.model.VOPath;
+import bibliotheca.tools.Tools;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
@@ -13,6 +13,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.pegdown.PegDownProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,11 +43,36 @@ public class BrowsePageService {
     @Autowired
     private ConfigService configService;
 
-    public Map<String, Object> getModel(String path, final String booksearch, final String devicePath, final String target, final String tidyup, final String delete, final String basename) {
+    public Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
+                                        final String target, final String tidyup, final String delete,
+                                        final String basename, String tryDB) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());
+
+        // try DB action
+        if (StringUtils.isNoneBlank(tryDB)) {
+            try {
+                Map<String, String> metadata = Tools.getStringStringMap(path, tryDB);
+                String dbKnihUrl = Tools.getAutomaticDBKnihUrl(tryDB);
+                if (StringUtils.isNotBlank(dbKnihUrl)) {
+                    metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
+                    Tools.writeMetaData(path, tryDB, metadata);
+
+                    Document doc = Jsoup.connect(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).get();
+                    String description = Tools.getDBKnihDescription(doc);
+
+                    if (StringUtils.isNotBlank(description)) {
+                        String baseFileName = Paths.get(file.getAbsolutePath(), tryDB).toString();
+                        Tools.createDescription(baseFileName, description);
+                    }
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();  // TODO Lebeda - implementova
+            }
+        }
 
         // tidyup some file
         if (StringUtils.isNoneBlank(tidyup)) {
@@ -150,8 +177,8 @@ public class BrowsePageService {
                     String cover = "";
                     //noinspection ConstantConditions
                     String nocovername = Paths.get(
-                        FilenameUtils.getFullPathNoEndSeparator(voFileList.get(0).getPath()),
-                        key + "." + Tools.NOCOVER
+                            FilenameUtils.getFullPathNoEndSeparator(voFileList.get(0).getPath()),
+                            key + "." + Tools.NOCOVER
                     ).toString();
                     final Path noCoverPath = Paths.get(nocovername);
                     if (voFile != null) {
@@ -218,7 +245,7 @@ public class BrowsePageService {
                     // TODO Lebeda - doc && !odt -> otd
                     // TODO Lebeda - doc && !docx -> docx
                     // !suf -> suff, epub, fb2, mobi
-                    Arrays.stream(new String[] {"epub", "fb2", "mobi"}).forEach(s -> {
+                    Arrays.stream(new String[]{"epub", "fb2", "mobi"}).forEach(s -> {
                         if (fileService.getTypeFile(voFileList, s, false) == null) {
                             fileDetail.getTargets().add(s);
                         }
@@ -255,7 +282,6 @@ public class BrowsePageService {
         // TODO Lebeda - generovat tagy pro šablonu
         return model;
     }
-
 
 
     // TODO Lebeda - do service
@@ -316,9 +342,6 @@ public class BrowsePageService {
 
         return html;
     }
-
-
-
 
 
 }

@@ -11,10 +11,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,23 +57,8 @@ public class EditFilePageService {
 
         // try search automatic in databaze knih
         if (StringUtils.isNotBlank(tryDbKnih)) {
-            try {
-
-                Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q="+ URLEncoder.encode(bookname) + "&hledat=&stranka=search").get();
-
-                Elements elements;
-                elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong"); // obal knihy
-
-                if (elements.size() == 1) {
-                    for (Element element : elements) {
-                        dbknih = "http://www.databazeknih.cz/" + element.attr("href");
-                        loadDescription = dbknih;
-                    }
-                }
-
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+            dbknih = Tools.getAutomaticDBKnihUrl(bookname);
+            loadDescription = dbknih;
         }
 
         // read metadata
@@ -85,7 +68,7 @@ public class EditFilePageService {
         if (StringUtils.isNotBlank(dbknih) && !dbknih.equals(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
             metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbknih);
 
-            writeMetaData(path, basename, metadata);
+            Tools.writeMetaData(path, basename, metadata);
         }
 
         // save metadata
@@ -116,16 +99,7 @@ public class EditFilePageService {
                 if (StringUtils.isNotBlank(loadDescription)
                         || StringUtils.isNotBlank(loadAll)
                         || StringUtils.isNotBlank(loadAllClose)) {
-                    elements = doc.select("#biall"); // obal knihy
-                    for (Element element : elements) {
-                        frmDescription = element.text().replace("méně textu", "");
-                    }
-                    if (StringUtils.isBlank(frmDescription)) {
-                        elements = doc.select("#bdetail_rest > p"); // obal knihy
-                        for (Element element : elements) {
-                            frmDescription = element.text().replace("méně textu", "");
-                        }
-                    }
+                    frmDescription = Tools.getDBKnihDescription(doc);
                 }
 
             } catch (IOException e) {
@@ -159,16 +133,6 @@ public class EditFilePageService {
         model.put("cover", (cover != null ? cover.getPath() : null));
 
         return model;
-    }
-
-    private static void writeMetaData(String path, String basename, Map<String, String> metadata) {
-        try {
-            Yaml yaml = new Yaml();
-            Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
-            yaml.dump(metadata, writer);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     private String getRawDesc(final List<VOFile> files) {
