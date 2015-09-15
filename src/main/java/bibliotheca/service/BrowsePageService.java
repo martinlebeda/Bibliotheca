@@ -54,8 +54,9 @@ public class BrowsePageService {
         // try DB action
         if (StringUtils.isNoneBlank(tryDB)) {
             try {
+                String bookname = StringUtils.replacePattern(tryDB, ".*- *", "");
                 Map<String, String> metadata = Tools.getStringStringMap(path, tryDB);
-                String dbKnihUrl = Tools.getAutomaticDBKnihUrl(tryDB);
+                String dbKnihUrl = Tools.getAutomaticDBKnihUrl(bookname);
                 if (StringUtils.isNotBlank(dbKnihUrl)) {
                     metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
                     Tools.writeMetaData(path, tryDB, metadata);
@@ -70,7 +71,7 @@ public class BrowsePageService {
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();  // TODO Lebeda - implementova
+                throw new IllegalStateException(e);
             }
         }
 
