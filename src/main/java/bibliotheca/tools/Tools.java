@@ -41,6 +41,7 @@ public class Tools {
     public static final String METADATA_KEY_SERIE = "serie";
     public static final String METADATA_KEY_POZNAMKA = "poznamka";
     public static final String METADATA_KEY_AUTHORS = "authors";
+    public static final int CONNECT_TIMEOUT_MILLIS = 10000;
 
     public static String removeDiacritics(String s) {
         return Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
@@ -208,7 +209,7 @@ public class Tools {
         String dbknih = "";
         try {
 
-            Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").get();
+            Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
 
             Elements elements;
             elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong");

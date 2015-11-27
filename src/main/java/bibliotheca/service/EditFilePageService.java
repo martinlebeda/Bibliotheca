@@ -83,7 +83,7 @@ public class EditFilePageService {
         ) && StringUtils.isNotBlank((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
             try {
 
-                Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).get();
+                Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
 
                 Elements elements;
 
