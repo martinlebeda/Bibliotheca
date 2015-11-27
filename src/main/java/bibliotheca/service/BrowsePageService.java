@@ -7,7 +7,6 @@ import bibliotheca.model.VOPath;
 import bibliotheca.tools.Tools;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Predicate;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -55,13 +54,13 @@ public class BrowsePageService {
         if (StringUtils.isNoneBlank(tryDB)) {
             try {
                 String bookname = StringUtils.replacePattern(tryDB, ".*- *", "");
-                Map<String, String> metadata = Tools.getStringStringMap(path, tryDB);
+                Map<String, Object> metadata = Tools.getStringStringMap(path, tryDB);
                 String dbKnihUrl = Tools.getAutomaticDBKnihUrl(bookname);
                 if (StringUtils.isNotBlank(dbKnihUrl)) {
                     metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
                     Tools.writeMetaData(path, tryDB, metadata);
 
-                    Document doc = Jsoup.connect(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).get();
+                    Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).get();
                     String description = Tools.getDBKnihDescription(doc);
 
                     if (StringUtils.isNotBlank(description)) {
@@ -206,9 +205,14 @@ public class BrowsePageService {
 
                     final String desc = getDesc(voFileList);
 
-                    Map<String, String> metadata = Tools.getStringStringMap(path, FilenameUtils.getBaseName(voFileList.get(0).getName()));
+                    Map<String, Object> metadata = Tools.getStringStringMap(path, FilenameUtils.getBaseName(voFileList.get(0).getName()));
 
-                    final VOFileDetail fileDetail = new VOFileDetail(key, cover, desc, metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ));
+                    @SuppressWarnings("unchecked") final VOFileDetail fileDetail = new VOFileDetail(key, cover, desc,
+                            (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ),
+                            (String) metadata.get(Tools.METADATA_KEY_NAZEV),
+                            (String) metadata.get(Tools.METADATA_KEY_SERIE),
+                            (List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS)
+                    );
 
                     final String name = file.getName();
                     if (!key.startsWith(name)) {
@@ -256,12 +260,7 @@ public class BrowsePageService {
 
                 });
 
-        CollectionUtils.filter(fileDetails, new Predicate<VOFileDetail>() {
-            @Override
-            public boolean evaluate(final VOFileDetail object) {
-                return object != null;
-            }
-        });
+        CollectionUtils.filter(fileDetails, object -> object != null);
 
         if (CollectionUtils.isNotEmpty(fileDetails)) {
             try {
@@ -305,6 +304,7 @@ public class BrowsePageService {
                             sha1Src,
                             FilenameUtils.getExtension(fileUklid.getName())).toFile());
                 } else {
+                    //noinspection ResultOfMethodCallIgnored
                     tgtFile.delete();
                 }
             } else {

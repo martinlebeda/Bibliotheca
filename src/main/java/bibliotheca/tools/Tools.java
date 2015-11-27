@@ -35,7 +35,12 @@ public class Tools {
     public static final String NOCOVER = "nocover";
     public static final String PARAM_PATH = "path";
     public static final String FRM_SEARCH = "booksearch";
+
     public static final String METADATA_KEY_DATABAZEKNIH_CZ = "dbknih";
+    public static final String METADATA_KEY_NAZEV = "nazev";
+    public static final String METADATA_KEY_SERIE = "serie";
+    public static final String METADATA_KEY_POZNAMKA = "poznamka";
+    public static final String METADATA_KEY_AUTHORS = "authors";
 
     public static String removeDiacritics(String s) {
         return Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
@@ -154,13 +159,13 @@ public class Tools {
         });
     }
 
-    public static Map<String, String> loadMetaData(String path, String basename) {
+    public static Map<String, Object> loadMetaData(String path, String basename) {
         try {
             final File file = Paths.get(path, basename + ".yaml").toFile();
             if (file.exists()) {
                 InputStream input = new FileInputStream(file);
                 Yaml yaml = new Yaml();
-                return (Map<String, String>) yaml.load(input);
+                return (Map<String, Object>) yaml.load(input);
             } else {
                 return new HashMap<>();
             }
@@ -169,8 +174,8 @@ public class Tools {
         }
     }
 
-    public static Map<String, String> getStringStringMap(String path, String basename) {
-        Map<String, String> metadata = loadMetaData(path, basename);
+    public static Map<String, Object> getStringStringMap(String path, String basename) {
+        Map<String, Object> metadata = loadMetaData(path, basename);
         if (!metadata.containsKey(METADATA_KEY_DATABAZEKNIH_CZ)) {
             metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, "");
         }
@@ -220,7 +225,7 @@ public class Tools {
         return dbknih;
     }
 
-    public static void writeMetaData(String path, String basename, Map<String, String> metadata) {
+    public static void writeMetaData(String path, String basename, Map<String, Object> metadata) {
         try {
             Yaml yaml = new Yaml();
             Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());

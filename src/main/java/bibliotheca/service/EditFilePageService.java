@@ -62,7 +62,7 @@ public class EditFilePageService {
         }
 
         // read metadata
-        Map<String, String> metadata = Tools.getStringStringMap(path, basename);
+        Map<String, Object> metadata = Tools.getStringStringMap(path, basename);
 
         // set matadata
         if (StringUtils.isNotBlank(dbknih) && !dbknih.equals(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
@@ -80,10 +80,10 @@ public class EditFilePageService {
                 || StringUtils.isNotBlank(loadDescription)
                 || StringUtils.isNotBlank(loadAll)
                 || StringUtils.isNotBlank(loadAllClose)
-        ) && StringUtils.isNotBlank(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
+        ) && StringUtils.isNotBlank((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
             try {
 
-                Document doc = Jsoup.connect(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).get();
+                Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).get();
 
                 Elements elements;
 
