@@ -26,9 +26,9 @@ public class VOFileDetail {
     private String targetPath = "";
     private String author;
 
-    private final String nazev;
+    private String nazev;
     private final List<String> authors = new ArrayList<>();
-    private final String serie;
+    private String serie;
     //    private final String hodnoceniDb;
 //    private final int hodnoceni;
 
@@ -139,4 +139,15 @@ public class VOFileDetail {
         return StringUtils.join(authors, "; ");
     }
 
+    public void setNazev(String nazev) {
+        this.nazev = nazev;
+    }
+
+    public void setSerie(String serie) {
+        this.serie = serie;
+    }
+
+    public List<String> getAuthors() {
+        return authors;
+    }
 }

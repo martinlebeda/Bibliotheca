@@ -58,10 +58,12 @@ public class BrowsePageService {
                 String dbKnihUrl = Tools.getAutomaticDBKnihUrl(bookname);
                 if (StringUtils.isNotBlank(dbKnihUrl)) {
                     metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
-                    Tools.writeMetaData(path, tryDB, metadata);
 
                     Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
                     String description = Tools.getDBKnihDescription(doc);
+                    // TODO Lebeda - DOPSAT DALSI metadata
+
+                    Tools.writeMetaData(path, tryDB, metadata);
 
                     if (StringUtils.isNotBlank(description)) {
                         String baseFileName = Paths.get(file.getAbsolutePath(), tryDB).toString();
@@ -213,6 +215,44 @@ public class BrowsePageService {
                             (String) metadata.get(Tools.METADATA_KEY_SERIE),
                             (List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS)
                     );
+
+                    //noinspection unchecked
+                    if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())
+                            && (StringUtils.isBlank((String) metadata.get(Tools.METADATA_KEY_NAZEV))
+                            || CollectionUtils.isEmpty((List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS)))
+                            ) {
+                        try {
+                            Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
+                            boolean saveChange = false;
+
+                            String nazev = Tools.getDBKnihNazev(doc);
+                            if (StringUtils.isNotBlank(nazev)) {
+                                fileDetail.setNazev(nazev);
+                                metadata.put(Tools.METADATA_KEY_NAZEV, nazev);
+                                saveChange = true;
+                            }
+
+                            String serie = Tools.getDBKnihSerie(doc);
+                            if (StringUtils.isNotBlank(serie)) {
+                                fileDetail.setSerie(serie);
+                                metadata.put(Tools.METADATA_KEY_SERIE, serie);
+                                saveChange = true;
+                            }
+
+                            List<String> authors = Tools.getDBKnihAuthors(doc);
+                            if (CollectionUtils.isNotEmpty(authors)) {
+                                fileDetail.getAuthors().addAll(authors);
+                                metadata.put(Tools.METADATA_KEY_AUTHORS, authors);
+                                saveChange = true;
+                            }
+
+                            if (saveChange) {
+                                Tools.writeMetaData(path, fileDetail.getName(), metadata);
+                            }
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
 
                     final String name = file.getName();
                     if (!key.startsWith(name)) {

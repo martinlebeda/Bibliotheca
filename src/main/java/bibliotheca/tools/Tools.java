@@ -20,9 +20,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Paths;
 import java.text.Normalizer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -204,6 +203,39 @@ public class Tools {
         }
         return frmDescription;
     }
+
+    public static String getDBKnihNazev(Document doc) {
+        String result = "";
+        Elements elements;
+        elements = doc.select("h1.bdetail");
+        for (Element element : elements) {
+            result = element.text();
+        }
+        return result;
+    }
+
+    public static String getDBKnihSerie(Document doc) {
+        String result = "";
+        Elements elements;
+        elements = doc.select("a[href^=serie]");
+        for (Element element : elements) {
+            result = element.parent().text().replaceAll("[().]","");
+        }
+        return result;
+    }
+
+    public static List<String> getDBKnihAuthors(Document doc) {
+        List<String> result = new ArrayList<>();
+        Elements elements;
+        //                                      #left_less > div:nth-child(4) > h2 > a:nth-child(2)
+        elements = doc.select("h2.jmenaautoru > a[href^=autori]");
+        result.addAll(elements.stream().map(Element::text).collect(Collectors.toList()));
+        return result;
+    }
+
+//    public static String getDBKnihNazev(Document doc) {
+//
+//    }
 
     public static String getAutomaticDBKnihUrl(String bookname) {
         String dbknih = "";

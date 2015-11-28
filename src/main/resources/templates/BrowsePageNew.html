@@ -9,7 +9,7 @@
     <!-- Begin of webjars -->
     <!-- JQuery must be before bootstrap!!! -->
     <script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js"
-            th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>
+            th:src="@{/webjars/jquery/4.1.4/jquery.min.js}"></script>
 
     <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.5/css/bootstrap.min.css"
           th:href="@{/webjars/bootstrap/3.3.5/css/bootstrap.min.css}"
@@ -58,14 +58,14 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav navbar-left" style="display: block">
-                    <li class="navbar-text" id="filter-label">Last books</li>
-                    <!--<li>-->
-                    <!--<ul class="breadcrumb">-->
-                    <!--<li><a href="#">Beletrie</a></li>-->
-                    <!--<li><a href="#">B</a></li>-->
-                    <!--<li class="active">Brandon, Sandy</li>-->
-                    <!--</ul>-->
-                    <!--</li>-->
+                    <!--<li class="navbar-text" id="filter-label">Last books</li>-->
+                    <li>
+                    <ul class="breadcrumb">
+                    <li><a href="#">Beletrie</a></li>
+                    <li><a href="#">B</a></li>
+                    <li class="active">Brandon, Sandy</li>
+                    </ul>
+                    </li>
 
                 </ul>
 
@@ -96,17 +96,17 @@
                             <li><a href="#">by date</a></li>
                         </ul>
                     </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                            Filter <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">Tagged</a></li>
-                            <li><a href="#">Last books</a></li>
-                            <li><a href="#">Last week</a></li>
-                            <li><a href="#">Dirty</a></li>
-                            <li><a href="#">Bad names</a></li>
-                        </ul>
-                    </li>
+                    <!--<li class="dropdown">-->
+                        <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">-->
+                            <!--Filter <span class="caret"></span></a>-->
+                        <!--<ul class="dropdown-menu">-->
+                            <!--<li><a href="#">Tagged</a></li>-->
+                            <!--<li><a href="#">Last books</a></li>-->
+                            <!--<li><a href="#">Last week</a></li>-->
+                            <!--<li><a href="#">Dirty</a></li>-->
+                            <!--<li><a href="#">Bad names</a></li>-->
+                        <!--</ul>-->
+                    <!--</li>-->
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -116,14 +116,16 @@
 
     <div id="MainBody">
         <!-- Alert -->
-        <th:block th:fragment="alert">
-            <div class="row">
-                <div class="alert alert-success fade in" id="alert" style="display:none;">
-                    <a href="#" class="close" onclick="$('#alert').hide();" aria-label="close">&times;</a>
-                    <strong>Success!</strong> Indicates a successful or positive action.
-                </div>
-            </div>
-        </th:block>
+        <!--<th:block th:fragment="alert">-->
+            <!--<div class="row">-->
+                <!--<div class="alert alert-success fade in" id="alert" style="display:none;">-->
+                    <!--<a href="#" class="close" onclick="$('#alert').hide();" aria-label="close">&times;</a>-->
+                    <!--<strong>Success!</strong> Indicates a successful or positive action.-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</th:block>-->
+        <!--<button class="btn btn-default" data-toggle="modal" data-target="#myModal"><i class="fa fa-windows"></i> Window</button>-->
+        <!--<button class="btn btn-default" onclick="$('#alert').show();"><i class="fa fa-windows"></i> alert</button>-->
 
         <!-- Authors -->
         <div class="row">
@@ -135,9 +137,6 @@
 
         <!-- founded ebooks -->
         <div class="row">
-            <!--<button class="btn btn-default" data-toggle="modal" data-target="#myModal"><i class="fa fa-windows"></i> Window</button>-->
-            <button class="btn btn-default" onclick="$('#alert').show();"><i class="fa fa-windows"></i> alert
-            </button>
         </div>
     </div>
 </div>
