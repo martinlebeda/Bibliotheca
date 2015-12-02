@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <title>Bibliotheca</title>
+    <!--<script th:remove="all" type="text/javascript" src="http://cdn.jsdelivr.net/webjars/thymol.js/2.0.0/thymol.js"></script>-->
+    <!--th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>-->
+
+    <th:block th:include="baseComponents :: header"/>
+
+    <!-- Begin of webjars -->
+    <!-- JQuery must be before bootstrap!!! -->
+    <script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js"
+            th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>
+
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.5/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.5/css/bootstrap.min.css}"
+          rel="stylesheet" media="screen"/>
+    <script src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.5/js/bootstrap.min.js"
+            th:src="@{/webjars/bootstrap/3.3.5/js/bootstrap.min.js}"></script>
+
+    <link href="http://cdn.jsdelivr.net/webjars/font-awesome/4.4.0/css/font-awesome.min.css"
+          th:href="@{/webjars/font-awesome/4.4.0/css/font-awesome.min.css}"
+          rel="stylesheet" media="screen"/>
+    <!-- End of webjars -->
+
+    <!-- less jen pro ladění -->
+    <link th:remove="all" rel="livePage" type="text/css" href="../less/styles.less"/>
+    <link th:remove="all" rel="stylesheet/less" type="text/css" href="../less/styles.less"/>
+    <script th:remove="all" src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js"></script>
+
+    <link rel="stylesheet" th:href="@{css/styles.css}"/>
+    <!--<script src="../static/js/cuttings.js" th:src="@{js/cuttings.js}"></script>-->
+
+</head>
+<body>
+
+<div class="container">
+    <!-- header -->
+    <div class="row">
+        <nav class="navbar navbar-default" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">
+                    <span>
+                        <img th:src="@{/pic/logo.svg}" src="../static/pic/logo.svg" width="20"/>
+                    </span> Bibliotheca
+                </a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav navbar-left" style="display: block">
+                    <!--<li class="navbar-text" id="filter-label">Last books</li>-->
+                    <li>
+                        <ul id="navigator" class="breadcrumb">
+                            <li><a href="/">HOME</a></li>
+                            <li th:each="p : ${navigator}"><a th:href="|browse?path=${p.path}|" th:text="${p.name}"
+                                                              href="#">Beletrie</a></li>
+                            <li th:remove="all"><a href="#">B</a></li>
+                            <li th:text="${navigatorFile}" id="navigator-file" class="active">Brandon, Sandy</li>
+                        </ul>
+                    </li>
+
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                            <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="file-external_search"
+                                   th:href="|https://www.google.cz/search?q=${navigatorFile}|"
+                                   target="_blank">Google</a>
+                            </li>
+                            <li>
+                                <a class="file-external_search" th:href="|editDir?path=${path}|">Edit</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <form class="navbar-form navbar-right" role="search" action="browse">
+                    <input type="hidden" name="path" th:value="${path}"/>
+
+                    <div class="form-group">
+                        <input type="search" name="booksearch" th:value="${booksearch}" class="form-control"
+                               placeholder="Search"/>
+                    </div>
+                    <input type="submit" value="search" class="btn btn-default"/>
+                </form>
+
+                <!--<form action="browse">-->
+                <!--<input type="hidden" name="path" value="${path}"/>-->
+                <!--<input type="search" name="booksearch" placeholder="search in current path (and subpath)"-->
+                <!--<#if (booksearch?has_content) >value="${booksearch}"<#else>value=""</#if> list="booknames" size="100"/>-->
+                <!--<input type="submit" value="search"/>-->
+                <!--</form>-->
+
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+    </div>
+
+    <div id="MainBody">
+        <!-- Alert -->
+        <!--<th:block th:fragment="alert">-->
+        <!--<div class="row">-->
+        <!--<div class="alert alert-success fade in" id="alert" style="display:none;">-->
+        <!--<a href="#" class="close" onclick="$('#alert').hide();" aria-label="close">&times;</a>-->
+        <!--<strong>Success!</strong> Indicates a successful or positive action.-->
+        <!--</div>-->
+        <!--</div>-->
+        <!--</th:block>-->
+        <!--<button class="btn btn-default" data-toggle="modal" data-target="#myModal"><i class="fa fa-windows"></i> Window</button>-->
+        <!--<button class="btn btn-default" onclick="$('#alert').show();"><i class="fa fa-windows"></i> alert</button>-->
+
+        <!-- directories -->
+        <div class="row">
+            <div id="directories">
+                <ul style="margin: 0px">
+                    <li th:each="p : ${dirs}">
+                        <a class="directory" th:href="|browse?path=${p.path}|" th:text="${p.name}" href="#">Habit,
+                            Fred</a>
+                    </li>
+                    <li th:remove="all"><a class="directory" href="#">Haddon, Mark</a></li>
+                    <li th:remove="all"><a class="directory" href="#">Hadrava, Tomas</a></li>
+                    <li th:remove="all"><a class="directory" href="#">Haensel, Hubert</a></li>
+                    <li th:remove="all"><a class="directory" href="#">Hagen, Lou Fananek</a></li>
+                    <li th:remove="all"><a class="directory" href="#">Haggard, H.R</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- founded ebooks -->
+        <div th:each="p : ${fileDetails}" class="row file">
+            <div class="col-xs-2">
+                <img th:if="${p.coverExists}" th:src="|cover?path=${p.cover}|"
+                     src="http://pingendo.github.io/pingendo-bootstrap/assets/placeholder.png"
+                     class="img-responsive bookCover"/>
+            </div>
+            <div class="col-xs-10">
+                <div class="row">
+
+                    <h1 th:text="${p.nazev}">Title</h1>
+                    <h5 th:text="${p.serie}">A serie</h5>
+                    <h4 th:text="${p.autor}">Author</h4>
+
+                    <p th:utext="${p.desc}">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo
+                        ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis
+                        dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies
+                        nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                        Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In
+                        enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum
+                        felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus
+                        elementum semper nisi.</p>
+                </div>
+                <div class="row itemToolbar">
+                    <div class="itemToolbarPartLeft">
+
+                        <a class="file-extension spaceAround" th:each="f : ${p.files}"
+                           th:href="|download?path=${f.path}|" th:text="${#strings.toLowerCase(f.ext)}">epub</a>
+
+                        <div class="dropdown dropup spaceAround">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                                <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li th:each="t : ${p.targets}"><a class="file-target"
+                                                                  th:href="|browse?path=${path}&amp;basename=${p.name}&amp;target=${t}|"
+                                                                  th:text="${#strings.toLowerCase(t)}">mobi</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                    <div class="itemToolbarPartRight">
+
+                        <a class="spaceAround"
+                           th:unless="${#strings.isEmpty(p.targetPath)}"
+                           th:href="|browse?path=${p.targetPath}|">...</a>
+                        <a class="spaceAround" th:if="${p.dbknihUrlExists}" th:href="${p.dbknihUrl}"
+                           target="_blank">DatabázeKnih.cz</a>
+                        <a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"
+                           th:href="|browse?path=${path}&amp;tryDB=${p.name}|">TryDB</a>
+
+                        <div class="dropdown dropup pull-right spaceAround">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                                <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a class="file-external_search" href="https://www.google.cz/search?q=${p.name}"
+                                       target="_blank">Google</a></li>
+                                <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
+                                                                        th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}"
+                                                                        target="_blank">DatabázeKnih</a></li>
+                                <li role="presentation" class="divider"></li>
+                                <li><a class="file-external_search"
+                                       th:href="|view${path}/${p.name}.htmlz/pack/index.html|"
+                                       target="_blank">View</a></li>
+                                <li><a class="file-external_search"
+                                       th:href="|editFile?path=${path}&amp;basename=${p.name}|">Edit</a></li>
+                                <li th:each="d : ${p.devices}"><a class="file-external_search"
+                                                                  th:href="|browse?path=${path}&amp;basename=${p.name}&amp;target=${d.format}&amp;devicePath=${d.path}|"
+                                                                  th:text="${d.name}">PocketBook</a></li>
+
+                                <li><a class="file-external_search" th:if="${p.tidyUp}"
+                                            th:href="|browse?path=${path}&amp;tidyup=${p.name}|"
+                                            th:text="|Move to &quot;${p.bookauthor}&quot;|">Move to ...</a></li>
+                                <li role="presentation" class="divider"></li>
+                                <li><a class="file-external_search"
+                                       th:href="|browse?path=${path}&amp;delete=${p.name}|">Delete</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--&lt;!&ndash; modal dialog &ndash;&gt;-->
+<!--<div class="modal fade" id="myModal">-->
+<!--<div class="modal-dialog">-->
+<!--<div class="modal-content">-->
+<!--<div class="modal-header">-->
+<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+<!--<h4 class="modal-title">Modal title</h4>-->
+<!--</div>-->
+<!--<div class="modal-body">-->
+<!--<p>One fine body&hellip;</p>-->
+<!--<button class="btn btn-default" data-toggle="modal" data-target="#myModal2"><i class="fa fa-windows"></i> Window</button>-->
+<!--</div>-->
+<!--<div class="modal-footer">-->
+<!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+<!--<button type="button" class="btn btn-primary">Save changes</button>-->
+<!--</div>-->
+<!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
+<!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
+<!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
+
+<!--<div class="modal fade" id="myModal2">-->
+<!--<div class="modal-dialog">-->
+<!--<div class="modal-content">-->
+<!--<div class="modal-header">-->
+<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+<!--<h4 class="modal-title">Modal title</h4>-->
+<!--</div>-->
+<!--<div class="modal-body">-->
+<!--<p>One fine body&hellip;</p>-->
+<!--<button class="btn btn-default" data-toggle="modal" data-target="#myModal2"><i class="fa fa-windows"></i> Window</button>-->
+<!--</div>-->
+<!--<div class="modal-footer">-->
+<!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+<!--<button type="button" class="btn btn-primary">Save changes</button>-->
+<!--</div>-->
+<!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
+<!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
+<!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
+
+</body>
+</html>

@@ -14,6 +14,8 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.pegdown.PegDownProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,28 +54,7 @@ public class BrowsePageService {
 
         // try DB action
         if (StringUtils.isNoneBlank(tryDB)) {
-            try {
-                String bookname = StringUtils.replacePattern(tryDB, ".*- *", "");
-                Map<String, Object> metadata = Tools.getStringStringMap(path, tryDB);
-                String dbKnihUrl = Tools.getAutomaticDBKnihUrl(bookname);
-                if (StringUtils.isNotBlank(dbKnihUrl)) {
-                    metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
-
-                    Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
-                    String description = Tools.getDBKnihDescription(doc);
-                    // TODO Lebeda - DOPSAT DALSI metadata
-
-                    Tools.writeMetaData(path, tryDB, metadata);
-
-                    if (StringUtils.isNotBlank(description)) {
-                        String baseFileName = Paths.get(file.getAbsolutePath(), tryDB).toString();
-                        Tools.createDescription(baseFileName, description);
-                    }
-                }
-
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+            tryDb(path, tryDB, file);
         }
 
         // tidyup some file
@@ -192,7 +173,6 @@ public class BrowsePageService {
                                 ; // nothing
                             }
                         }
-                        // TODO Lebeda - odmazat příznak
                     } else {
                         if (!Files.exists(noCoverPath)) {
                             try {
@@ -223,32 +203,37 @@ public class BrowsePageService {
                             ) {
                         try {
                             Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
-                            boolean saveChange = false;
-
-                            String nazev = Tools.getDBKnihNazev(doc);
-                            if (StringUtils.isNotBlank(nazev)) {
-                                fileDetail.setNazev(nazev);
-                                metadata.put(Tools.METADATA_KEY_NAZEV, nazev);
-                                saveChange = true;
-                            }
-
-                            String serie = Tools.getDBKnihSerie(doc);
-                            if (StringUtils.isNotBlank(serie)) {
-                                fileDetail.setSerie(serie);
-                                metadata.put(Tools.METADATA_KEY_SERIE, serie);
-                                saveChange = true;
-                            }
-
-                            List<String> authors = Tools.getDBKnihAuthors(doc);
-                            if (CollectionUtils.isNotEmpty(authors)) {
-                                fileDetail.getAuthors().addAll(authors);
-                                metadata.put(Tools.METADATA_KEY_AUTHORS, authors);
-                                saveChange = true;
-                            }
-
-                            if (saveChange) {
+                            if (loadFromDBKnih(metadata, fileDetail, doc)) {
                                 Tools.writeMetaData(path, fileDetail.getName(), metadata);
                             }
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+
+                    // automatic load cover if missing
+                    if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())
+                            && !fileDetail.getCoverExists()) {
+                        Document doc = null;
+                        try {
+                            doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
+
+                            Elements elements;
+                            String frmCover = null;
+
+
+                            elements = doc.select("img.kniha_img"); // obal knihy
+                            for (Element element : elements) {
+                                frmCover = element.attr("src");
+                            }
+
+                            if (StringUtils.isNoneBlank(frmCover)) {
+                                String baseFileName = Paths.get(file.getAbsolutePath(), fileDetail.getName()).toString();
+                                VOFile coverDb = Tools.downloadCover(baseFileName, frmCover);
+                                fileDetail.setCover(coverDb.getPath());
+                            }
+
+
                         } catch (IOException e) {
                             throw new IllegalStateException(e);
                         }
@@ -287,8 +272,6 @@ public class BrowsePageService {
                     );
                     fileDetails.add(fileDetail);
 
-                    // TODO Lebeda - doc && !odt -> otd
-                    // TODO Lebeda - doc && !docx -> docx
                     // !suf -> suff, epub, fb2, mobi
                     Arrays.stream(new String[]{"epub", "fb2", "mobi"}).forEach(s -> {
                         if (fileService.getTypeFile(voFileList, s, false) == null) {
@@ -321,6 +304,64 @@ public class BrowsePageService {
 
         // TODO Lebeda - generovat tagy pro šablonu
         return model;
+    }
+
+    private void tryDb(String path, String tryDB, File file) {
+        try {
+            String bookname = StringUtils.replacePattern(tryDB, ".*- *", "");
+            Map<String, Object> metadata = Tools.getStringStringMap(path, tryDB);
+            String dbKnihUrl = Tools.getAutomaticDBKnihUrl(bookname);
+            if (StringUtils.isNotBlank(dbKnihUrl)) {
+                metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
+
+                Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
+                String description = Tools.getDBKnihDescription(doc);
+                loadFromDBKnih(metadata, null, doc);
+
+                Tools.writeMetaData(path, tryDB, metadata);
+
+                if (StringUtils.isNotBlank(description)) {
+                    String baseFileName = Paths.get(file.getAbsolutePath(), tryDB).toString();
+                    Tools.createDescription(baseFileName, description);
+                }
+            }
+
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private boolean loadFromDBKnih(Map<String, Object> metadata, VOFileDetail fileDetail, Document doc) {
+        boolean saveChange = false;
+
+        String nazev = Tools.getDBKnihNazev(doc);
+        if (StringUtils.isNotBlank(nazev)) {
+            if (fileDetail != null) {
+                fileDetail.setNazev(nazev);
+            }
+            metadata.put(Tools.METADATA_KEY_NAZEV, nazev);
+            saveChange = true;
+        }
+
+        String serie = Tools.getDBKnihSerie(doc);
+        if (StringUtils.isNotBlank(serie)) {
+            if (fileDetail != null) {
+                fileDetail.setSerie(serie);
+            }
+            metadata.put(Tools.METADATA_KEY_SERIE, serie);
+            saveChange = true;
+        }
+
+        List<String> authors = Tools.getDBKnihAuthors(doc);
+        if (CollectionUtils.isNotEmpty(authors)) {
+            if (fileDetail != null) {
+                fileDetail.getAuthors().clear();
+                fileDetail.getAuthors().addAll(authors);
+            }
+            metadata.put(Tools.METADATA_KEY_AUTHORS, authors);
+            saveChange = true;
+        }
+        return saveChange;
     }
 
 

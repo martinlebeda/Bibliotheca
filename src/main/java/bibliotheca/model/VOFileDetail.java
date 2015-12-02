@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class VOFileDetail {
     private final String name;
-    private final String cover;
+    private String cover;
     private final String dbknihUrl;
     private final List<VOFile> files = new ArrayList<>();
     private final String desc;
@@ -40,7 +40,7 @@ public class VOFileDetail {
         this.dbknihUrl = dbknihUrl;
 
         this.nazev = (StringUtils.isBlank(nazev) ? getBookname() : nazev);
-        this.serie = (StringUtils.isBlank(nazev) ? getBookserie() : nazev);
+        this.serie = (StringUtils.isBlank(nazev) ? getBookserie() : serie);
 
         if (CollectionUtils.isNotEmpty(authors)) {
             this.authors.addAll(authors);
@@ -49,6 +49,9 @@ public class VOFileDetail {
         }
     }
 
+    public void setCover(String cover) {
+        this.cover = cover;
+    }
 
     public List<String> getTargets() {
         return targets;
@@ -122,7 +125,7 @@ public class VOFileDetail {
         return null;
     }
 
-    private String getBookauthor() {
+    public String getBookauthor() {
         String[] split = StringUtils.split(name, "-", 2);
         return StringUtils.trim(split[0]);
     }

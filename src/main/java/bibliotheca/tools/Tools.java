@@ -207,7 +207,7 @@ public class Tools {
     public static String getDBKnihNazev(Document doc) {
         String result = "";
         Elements elements;
-        elements = doc.select("h1.bdetail");
+        elements = doc.select("h1[itemprop=name]");
         for (Element element : elements) {
             result = element.text();
         }
