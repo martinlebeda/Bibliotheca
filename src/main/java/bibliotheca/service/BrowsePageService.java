@@ -12,6 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -287,7 +288,12 @@ public class BrowsePageService {
 
         if (CollectionUtils.isNotEmpty(fileDetails)) {
             try {
-                fileDetails.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+                fileDetails.sort((o1, o2) -> new CompareToBuilder()
+                        .append(o1.getBookauthor(), o2.getBookauthor())
+                        .append(o1.getSerie(), o2.getSerie())
+                        .append(o1.getNazev(), o2.getNazev())
+                        .append(o1.getName(), o2.getName())
+                        .toComparison());
             } catch (NullPointerException e) {
                 System.out.println("nic");
             }

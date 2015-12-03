@@ -177,6 +177,10 @@
                                                                   th:href="|browse?path=${path}&amp;basename=${p.name}&amp;target=${t}|"
                                                                   th:text="${#strings.toLowerCase(t)}">mobi</a>
                                 </li>
+                                <li role="presentation" class="divider"></li>
+                                <li><a class="file-external_search"
+                                       th:href="|view${path}/${p.name}.htmlz/pack/index.html|"
+                                       target="_blank">View</a></li>
                             </ul>
                         </div>
 
