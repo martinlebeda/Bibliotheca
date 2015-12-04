@@ -3,8 +3,7 @@ package bibliotheca.service;
 import bibliotheca.model.VOFileDetail;
 import org.jsoup.nodes.Document;
 
-import java.io.File;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Rutines for loading and extract data from site databazeknih.cz.
@@ -17,17 +16,11 @@ public interface DataBaseKnihService {
     int CONNECT_TIMEOUT_MILLIS = 10000; // timeout for connect to external source
 
     /**
-     * Load (not)all information from databazeknih.cz and fill to metadata and fileDetail
+     * fill all available information from databazeknih.cz to fileDetail and save them to disk
      *
-     * @param metadata
-     * @param fileDetail
-     *
-     * @param url url to databazeknih.cz
-     * @return true if something changed
-     * @deprecated will be break into more atomic operations
+     * @param fileDetail detail of book
      */
-    @Deprecated
-    boolean loadFromDBKnih(Map<String, Object> metadata, VOFileDetail fileDetail, String url);
+    void loadFromDBKnih(VOFileDetail fileDetail);
 
     /**
      * Get raw loaded data from databazeknih.cz.
@@ -53,14 +46,9 @@ public interface DataBaseKnihService {
     /**
      * tray find book in databazeknih.cz and automatically fill extracted metadata.
      *
-     * @param path
-     * @param tryDB
-     * @param file
-     *
-     * @deprecated will be break to more atomic
+     * @param fileDetail detail of book
      */
-    @Deprecated
-    void tryDb(String path, String tryDB, File file);
+    void tryDb(VOFileDetail fileDetail);
 
     /**
      * Extract book description from databazeknih.cz
@@ -85,4 +73,13 @@ public interface DataBaseKnihService {
      * @return average rating
      */
     String getHodnoceniDbProcento(String url);
+
+    // TODO - JavaDoc - Lebeda
+    String getNazev(String url);
+
+    // TODO - JavaDoc - Lebeda
+    String getSerie(String url);
+
+    // TODO - JavaDoc - Lebeda
+    List<String> getAuthors(String url);
 }

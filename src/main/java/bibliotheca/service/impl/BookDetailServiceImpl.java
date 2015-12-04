@@ -31,7 +31,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -70,8 +69,6 @@ public class BookDetailServiceImpl implements BookDetailService {
 
     @Override
     public VOFileDetail getVoFileDetail(String path, String key, List<VOFile> voFileList) {
-        File file = new File(path);
-
         final String uuid = uuidService.getUuid(path, key);
 
         final VOFile voFile = fileService.getCover(voFileList);
@@ -105,38 +102,24 @@ public class BookDetailServiceImpl implements BookDetailService {
 
         final String desc = getDesc(voFileList);
 
-        Map<String, Object> metadata = Tools.getStringStringMap(path, FilenameUtils.getBaseName(voFileList.get(0).getName()));
-        final VOFileDetail fileDetail = new VOFileDetail(uuid, key, cover, desc, metadata);
+        final VOFileDetail fileDetail = new VOFileDetail(uuid, key, cover, desc, path,
+                Tools.getStringStringMap(path, FilenameUtils.getBaseName(voFileList.get(0).getName())));
 
         //noinspection unchecked
         if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())) {
-            boolean metadataChanged = false; // TODO Lebeda - odstranit a použít příznak přímo v detailu
-
-            if (StringUtils.isBlank((String) metadata.get(Tools.METADATA_KEY_NAZEV))) {
-                if (dataBaseKnihService.loadFromDBKnih(metadata, fileDetail, fileDetail.getDbknihUrl())) {
-                    metadataChanged = true;
-                }
+            if (StringUtils.isBlank(fileDetail.getNazevMeta())) {
+                fileDetail.setNazev(dataBaseKnihService.getNazev(fileDetail.getDbknihUrl()));
+                fileDetail.setSerie(dataBaseKnihService.getSerie(fileDetail.getDbknihUrl()));
             }
 
             //noinspection unchecked
-            if (CollectionUtils.isEmpty((List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS))) {
-                if (dataBaseKnihService.loadFromDBKnih(metadata, fileDetail, fileDetail.getDbknihUrl())) {
-                    metadataChanged = true;
-                }
+            if (CollectionUtils.isEmpty(fileDetail.getAuthors())) {
+                fileDetail.replaceAuthors(dataBaseKnihService.getAuthors(fileDetail.getDbknihUrl()));
             }
 
             if (StringUtils.isBlank(fileDetail.getHodnoceniDbPocet()) || StringUtils.isBlank(fileDetail.getHodnoceniDbProcento())) {
                 fileDetail.setHodnoceniDbPocet(dataBaseKnihService.getHodnoceniDbPocet(fileDetail.getDbknihUrl()));
                 fileDetail.setHodnoceniDbProcento(dataBaseKnihService.getHodnoceniDbProcento(fileDetail.getDbknihUrl()));
-
-                // TODO Lebeda - zajistit ukládání metadat přímo ve VO
-                metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_POCET, fileDetail.getHodnoceniDbPocet());
-                metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_PROCENTO, fileDetail.getHodnoceniDbProcento());
-                metadataChanged = true;
-            }
-
-            if (metadataChanged) {
-                Tools.writeMetaData(path, fileDetail.getName(), metadata);
             }
 
             // automatic load cover if missing
@@ -150,17 +133,18 @@ public class BookDetailServiceImpl implements BookDetailService {
                 }
 
                 if (StringUtils.isNoneBlank(frmCover)) {
-                    String baseFileName = Paths.get(file.getAbsolutePath(), fileDetail.getName()).toString();
+                    String baseFileName = Paths.get(new File(path).getAbsolutePath(), fileDetail.getName()).toString();
                     VOFile coverDb = Tools.downloadCover(baseFileName, frmCover);
                     fileDetail.setCover(coverDb.getPath());
                 }
             }
 
-            // TODO Lebeda - dopsat automatický zápis metadat
-
+            if (fileDetail.isDirty()) {
+                Tools.writeMetaData(path, fileDetail.getName(), fileDetail.getMetadata());
+            }
         }
 
-        final String name = file.getName();
+        final String name = new File(path).getName();
         if (!key.startsWith(name)) {
             fileDetail.setTidyUp(true);
         }
@@ -169,7 +153,7 @@ public class BookDetailServiceImpl implements BookDetailService {
         final String[] split = StringUtils.split(key, "-", 2);
         if (split.length > 1) {
             String author = StringUtils.trim(split[0]);
-            final String fileAbsolutePath = file.getAbsolutePath();
+            final String fileAbsolutePath = new File(path).getAbsolutePath();
             if (!fileAbsolutePath.endsWith(author)) {
                 final File tgtPath = new File(getTgtPathByAuthor(author));
                 if (tgtPath.exists()) {

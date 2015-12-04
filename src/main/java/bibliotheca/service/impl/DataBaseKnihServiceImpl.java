@@ -1,9 +1,9 @@
 package bibliotheca.service.impl;
 
+import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.service.DataBaseKnihService;
 import bibliotheca.tools.Tools;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -31,39 +32,35 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
     private Map<String, Document> cacheDoc = new HashMap<>();
 
     @Override
-    public boolean loadFromDBKnih(Map<String, Object> metadata, VOFileDetail fileDetail, String url) {
-        boolean saveChange = false;
-        Document doc = getDocument(url);
+    public void loadFromDBKnih(@NotNull VOFileDetail fileDetail) {
+        fileDetail.setNazev(getNazev(fileDetail.getDbknihUrl()));
+        fileDetail.setSerie(getSerie(fileDetail.getDbknihUrl()));
+        fileDetail.replaceAuthors(getAuthors(fileDetail.getDbknihUrl()));
+        fileDetail.setHodnoceniDbPocet(getHodnoceniDbPocet(fileDetail.getDbknihUrl()));
+        fileDetail.setHodnoceniDbProcento(getHodnoceniDbProcento(fileDetail.getDbknihUrl()));
 
-        String nazev = getDBKnihNazev(doc);
-        if (StringUtils.isNotBlank(nazev)) {
-            if (fileDetail != null) {
-                fileDetail.setNazev(nazev);
+        // automatic load cover if missing
+        if (!fileDetail.getCoverExists()) {
+            Elements elements;
+            String frmCover = null;
+
+            elements = getDocument(fileDetail.getDbknihUrl()).select("img.kniha_img"); // obal knihy
+            for (Element element : elements) {
+                frmCover = element.attr("src");
             }
-            metadata.put(Tools.METADATA_KEY_NAZEV, nazev);
-            saveChange = true;
+
+            if (StringUtils.isNoneBlank(frmCover)) {
+                String baseFileName = Paths.get(new File(fileDetail.getPath()).getAbsolutePath(), fileDetail.getName()).toString();
+                VOFile coverDb = Tools.downloadCover(baseFileName, frmCover);
+                fileDetail.setCover(coverDb.getPath());
+            }
         }
 
-        String serie = getDBKnihSerie(doc);
-        if (StringUtils.isNotBlank(serie)) {
-            if (fileDetail != null) {
-                fileDetail.setSerie(serie);
-            }
-            metadata.put(Tools.METADATA_KEY_SERIE, serie);
-            saveChange = true;
+        if (fileDetail.isDirty()) {
+            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getName(), fileDetail.getMetadata());
         }
-
-        List<String> authors = getDBKnihAuthors(doc);
-        if (CollectionUtils.isNotEmpty(authors)) {
-            if (fileDetail != null) {
-                fileDetail.getAuthors().clear();
-                fileDetail.getAuthors().addAll(authors);
-            }
-            metadata.put(Tools.METADATA_KEY_AUTHORS, authors);
-            saveChange = true;
-        }
-        return saveChange;
     }
+
 
     @Override
     public Document getDocument(String url) {
@@ -80,20 +77,17 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
         }
     }
 
-    public void tryDb(String path, String tryDB, File file) {
-        String bookname = StringUtils.replacePattern(tryDB, ".*- *", "");
-        Map<String, Object> metadata = Tools.getStringStringMap(path, tryDB);
-        String dbKnihUrl = getAutomaticDBKnihUrl(bookname);
+    public void tryDb(VOFileDetail fileDetail) {
+        String dbKnihUrl = getAutomaticDBKnihUrl(fileDetail.getBookname());
         if (StringUtils.isNotBlank(dbKnihUrl)) {
-            metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
-
+            fileDetail.setDbknihUrl(dbKnihUrl);
             String description = getDBKnihDescription(dbKnihUrl);
-            loadFromDBKnih(metadata, null, dbKnihUrl);
+            loadFromDBKnih(fileDetail);
 
-            Tools.writeMetaData(path, tryDB, metadata);
+            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getName(), fileDetail.getMetadata());
 
             if (StringUtils.isNotBlank(description)) {
-                String baseFileName = Paths.get(file.getAbsolutePath(), tryDB).toString();
+                String baseFileName = Paths.get(fileDetail.getPath(), fileDetail.getName()).toString();
                 Tools.createDescription(baseFileName, description);
             }
         }
@@ -147,38 +141,37 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
         return result;
     }
 
-    private static String getDBKnihNazev(Document doc) {
+    @Override
+    public String getNazev(String url) {
         String result = "";
         Elements elements;
-        elements = doc.select("h1[itemprop=name]");
+        elements = getDocument(url).select("h1[itemprop=name]");
         for (Element element : elements) {
             result = element.text();
         }
         return result;
     }
 
-    private static String getDBKnihSerie(Document doc) {
+    @Override
+    public String getSerie(String url) {
         String result = "";
         Elements elements;
-        elements = doc.select("a[href^=serie]");
+        elements = getDocument(url).select("a[href^=serie]");
         for (Element element : elements) {
             result = element.parent().text().replaceAll("[().]", "");
         }
         return result;
     }
 
-    private static List<String> getDBKnihAuthors(Document doc) {
+    @Override
+    public List<String> getAuthors(String url) {
         List<String> result = new ArrayList<>();
         Elements elements;
         //                                      #left_less > div:nth-child(4) > h2 > a:nth-child(2)
-        elements = doc.select("h2.jmenaautoru > a[href^=autori]");
+        elements = getDocument(url).select("h2.jmenaautoru > a[href^=autori]");
         result.addAll(elements.stream().map(Element::text).collect(Collectors.toList()));
         return result;
     }
-
-//    public static String getDBKnihNazev(Document doc) {
-//
-//    }
 
     @Override
     public String getAutomaticDBKnihUrl(String bookname) {

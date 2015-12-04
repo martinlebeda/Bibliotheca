@@ -64,7 +64,8 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
         // try DB action
         if (StringUtils.isNoneBlank(tryDB)) {
-            dataBaseKnihService.tryDb(path, tryDB, file);
+            VOFileDetail fd = bookDetailService.getVoFileDetail(path, tryDB);
+            dataBaseKnihService.tryDb(fd);
         }
 
         // tidyup some file
