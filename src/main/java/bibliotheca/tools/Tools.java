@@ -41,6 +41,7 @@ public class Tools {
     public static final String METADATA_KEY_POZNAMKA = "poznamka";
     public static final String METADATA_KEY_AUTHORS = "authors";
     public static final int CONNECT_TIMEOUT_MILLIS = 10000;
+    public static final int CLEAR_CACHE_DELAY = 3600000; // in miliseconds
 
     public static String removeDiacritics(String s) {
         return Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");

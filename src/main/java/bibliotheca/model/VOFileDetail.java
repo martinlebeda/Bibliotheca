@@ -4,6 +4,8 @@ import bibliotheca.config.VODevice;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +34,12 @@ public class VOFileDetail {
     //    private final String hodnoceniDb;
 //    private final int hodnoceni;
 
-    public VOFileDetail(final String name, final String cover, final String desc, final String dbknihUrl,
+    private String uuid;
+
+    public VOFileDetail(final String uuid, final String name, final String cover, final String desc, final String dbknihUrl,
                         final String nazev, final String serie, final List<String> authors) {
+        this.uuid = uuid;
+
         this.desc = desc;
         this.cover = StringUtils.defaultString(cover);
         this.name = StringUtils.defaultString(name);
@@ -48,6 +54,18 @@ public class VOFileDetail {
             this.authors.add(getBookauthor());
         }
     }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public String getEncodedName() {
+        try {
+            return URLEncoder.encode(getName(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+    };
 
     public void setCover(String cover) {
         this.cover = cover;

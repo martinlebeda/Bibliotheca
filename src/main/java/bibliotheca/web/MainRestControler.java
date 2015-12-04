@@ -9,10 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.imageio.ImageIO;
@@ -53,10 +50,12 @@ public class MainRestControler {
         }
     }
 
+//    @RequestMapping("/view/**{variable:.+}")
+//    public byte[] view(@PathVariable String variable, HttpServletRequest request) {
     @RequestMapping("/view/**")
     public byte[] view(HttpServletRequest request) {
         String restOfTheUrl = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-        String splat = restOfTheUrl.replaceFirst("/view/", "");
+        String splat = restOfTheUrl.replaceFirst("/view/", "").replaceAll("\\+", " ");
 
         final String[] strings = StringUtils.splitByWholeSeparator(splat, "/pack/");
         final String baseName = File.separator + strings[0];

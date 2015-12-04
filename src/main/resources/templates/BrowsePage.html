@@ -141,7 +141,7 @@
         </div>
 
         <!-- founded ebooks -->
-        <div th:each="p : ${fileDetails}" class="row file">
+        <div th:each="p : ${fileDetails}" th:id="${p.uuid}" class="row file">
             <div class="col-xs-2">
                 <img th:if="${p.coverExists}" th:src="|cover?path=${p.cover}|"
                      src="http://pingendo.github.io/pingendo-bootstrap/assets/placeholder.png"
@@ -179,7 +179,7 @@
                                 </li>
                                 <li role="presentation" class="divider"></li>
                                 <li><a class="file-external_search"
-                                       th:href="|view${path}/${p.name}.htmlz/pack/index.html|"
+                                       th:href="|view${encodedPath}/${p.encodedName}.htmlz/pack/index.html|"
                                        target="_blank">View</a></li>
                             </ul>
                         </div>
