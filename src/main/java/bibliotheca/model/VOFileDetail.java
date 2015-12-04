@@ -1,6 +1,7 @@
 package bibliotheca.model;
 
 import bibliotheca.config.VODevice;
+import bibliotheca.tools.Tools;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -8,7 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Map;
 
 
 /**
@@ -31,28 +32,45 @@ public class VOFileDetail {
     private String nazev;
     private final List<String> authors = new ArrayList<>();
     private String serie;
-    //    private final String hodnoceniDb;
+
+    private String hodnoceniDbProcento;
+    private String hodnoceniDbPocet;
 //    private final int hodnoceni;
 
     private String uuid;
 
-    public VOFileDetail(final String uuid, final String name, final String cover, final String desc, final String dbknihUrl,
-                        final String nazev, final String serie, final List<String> authors) {
+    public VOFileDetail(final String uuid, final String name, final String cover, final String desc, Map<String, Object> metadata) {
+//        final String dbknihUrl,
+//                                final String nazev, final String serie, final List<String> authors
+//
+//                (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ),
+//                 (String) metadata.get(Tools.METADATA_KEY_NAZEV),
+//                 (String) metadata.get(Tools.METADATA_KEY_SERIE),
+//                 (List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS
+
         this.uuid = uuid;
 
         this.desc = desc;
         this.cover = StringUtils.defaultString(cover);
         this.name = StringUtils.defaultString(name);
-        this.dbknihUrl = dbknihUrl;
+        this.dbknihUrl = (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ);
 
+        final String nazev = (String) metadata.get(Tools.METADATA_KEY_NAZEV);
         this.nazev = (StringUtils.isBlank(nazev) ? getBookname() : nazev);
-        this.serie = (StringUtils.isBlank(nazev) ? getBookserie() : serie);
 
+        final String serie = (String) metadata.get(Tools.METADATA_KEY_SERIE);
+        this.serie = (StringUtils.isBlank(serie) ? getBookserie() : serie);
+
+        @SuppressWarnings("unchecked")
+        final List<String> authors = (List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS);
         if (CollectionUtils.isNotEmpty(authors)) {
             this.authors.addAll(authors);
         } else {
             this.authors.add(getBookauthor());
         }
+
+        this.hodnoceniDbProcento = (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_PROCENTO);
+        this.hodnoceniDbPocet = (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_POCET);
     }
 
     public String getUuid() {
@@ -170,5 +188,21 @@ public class VOFileDetail {
 
     public List<String> getAuthors() {
         return authors;
+    }
+
+    public String getHodnoceniDbPocet() {
+        return hodnoceniDbPocet;
+    }
+
+    public void setHodnoceniDbPocet(String hodnoceniDbPocet) {
+        this.hodnoceniDbPocet = hodnoceniDbPocet;
+    }
+
+    public String getHodnoceniDbProcento() {
+        return hodnoceniDbProcento;
+    }
+
+    public void setHodnoceniDbProcento(String hodnoceniDbProcento) {
+        this.hodnoceniDbProcento = hodnoceniDbProcento;
     }
 }

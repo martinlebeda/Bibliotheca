@@ -43,6 +43,9 @@ public class BrowsePageService {
     @Autowired
     private BookDetailService bookDetailService;
 
+    @Autowired
+    private DataBaseKnihService dataBaseKnihService;
+
     public Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
                                         final String target, final String tidyup, final String delete,
                                         final String basename, String tryDB) {
@@ -58,7 +61,7 @@ public class BrowsePageService {
 
         // try DB action
         if (StringUtils.isNoneBlank(tryDB)) {
-            tryDb(path, tryDB, file);
+            dataBaseKnihService.tryDb(path, tryDB, file);
         }
 
         // tidyup some file
@@ -194,32 +197,6 @@ public class BrowsePageService {
         // TODO Lebeda - generovat tagy pro šablonu
         return model;
     }
-
-    private void tryDb(String path, String tryDB, File file) {
-        try {
-            String bookname = StringUtils.replacePattern(tryDB, ".*- *", "");
-            Map<String, Object> metadata = Tools.getStringStringMap(path, tryDB);
-            String dbKnihUrl = Tools.getAutomaticDBKnihUrl(bookname);
-            if (StringUtils.isNotBlank(dbKnihUrl)) {
-                metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbKnihUrl);
-
-                Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
-                String description = Tools.getDBKnihDescription(doc);
-                bookDetailService.loadFromDBKnih(metadata, null, doc);
-
-                Tools.writeMetaData(path, tryDB, metadata);
-
-                if (StringUtils.isNotBlank(description)) {
-                    String baseFileName = Paths.get(file.getAbsolutePath(), tryDB).toString();
-                    Tools.createDescription(baseFileName, description);
-                }
-            }
-
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
 
     // TODO Lebeda - do service
     private void tidyUp(final File fileUklid) {

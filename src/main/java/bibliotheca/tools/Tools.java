@@ -6,22 +6,17 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Paths;
 import java.text.Normalizer;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -36,11 +31,12 @@ public class Tools {
     public static final String FRM_SEARCH = "booksearch";
 
     public static final String METADATA_KEY_DATABAZEKNIH_CZ = "dbknih";
+    public static final String METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_PROCENTO = "dbknihHodnoceniProcento";
+    public static final String METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_POCET = "dbknihHodnoceniPocet";
     public static final String METADATA_KEY_NAZEV = "nazev";
     public static final String METADATA_KEY_SERIE = "serie";
     public static final String METADATA_KEY_POZNAMKA = "poznamka";
     public static final String METADATA_KEY_AUTHORS = "authors";
-    public static final int CONNECT_TIMEOUT_MILLIS = 10000;
     public static final int CLEAR_CACHE_DELAY = 3600000; // in miliseconds
 
     public static String removeDiacritics(String s) {
@@ -183,81 +179,7 @@ public class Tools {
         return metadata;
     }
 
-    public static String getDBKnihDescription(Document doc) {
-        String frmDescription = "";
-        Elements elements;
-        elements = doc.select("#biall");
-        for (Element element : elements) {
-            frmDescription = element.text().replace("méně textu", "");
-        }
-        if (StringUtils.isBlank(frmDescription)) {
-            elements = doc.select("#bdetail_rest > p");
-            for (Element element : elements) {
-                frmDescription = element.text().replace("méně textu", "");
-            }
-        }
-        if (StringUtils.isBlank(frmDescription)) {
-            elements = doc.select("#bdetail_rest_mid > p");
-            for (Element element : elements) {
-                frmDescription = element.text().replace("méně textu", "");
-            }
-        }
-        return frmDescription;
-    }
 
-    public static String getDBKnihNazev(Document doc) {
-        String result = "";
-        Elements elements;
-        elements = doc.select("h1[itemprop=name]");
-        for (Element element : elements) {
-            result = element.text();
-        }
-        return result;
-    }
-
-    public static String getDBKnihSerie(Document doc) {
-        String result = "";
-        Elements elements;
-        elements = doc.select("a[href^=serie]");
-        for (Element element : elements) {
-            result = element.parent().text().replaceAll("[().]","");
-        }
-        return result;
-    }
-
-    public static List<String> getDBKnihAuthors(Document doc) {
-        List<String> result = new ArrayList<>();
-        Elements elements;
-        //                                      #left_less > div:nth-child(4) > h2 > a:nth-child(2)
-        elements = doc.select("h2.jmenaautoru > a[href^=autori]");
-        result.addAll(elements.stream().map(Element::text).collect(Collectors.toList()));
-        return result;
-    }
-
-//    public static String getDBKnihNazev(Document doc) {
-//
-//    }
-
-    public static String getAutomaticDBKnihUrl(String bookname) {
-        String dbknih = "";
-        try {
-
-            Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
-
-            Elements elements;
-            elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong");
-
-            if (elements.size() == 1) {
-                for (Element element : elements) {
-                    dbknih = "http://www.databazeknih.cz/" + element.attr("href");
-                }
-            }
-
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-        return dbknih;
-    }
 
     public static void writeMetaData(String path, String basename, Map<String, Object> metadata) {
         try {

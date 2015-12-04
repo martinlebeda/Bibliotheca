@@ -5,14 +5,15 @@ import bibliotheca.tools.Tools;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,6 +28,9 @@ public class EditFilePageService {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private DataBaseKnihService dataBaseKnihService;
 
     public Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
                                         String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih) {
@@ -57,7 +61,7 @@ public class EditFilePageService {
 
         // try search automatic in databaze knih
         if (StringUtils.isNotBlank(tryDbKnih)) {
-            dbknih = Tools.getAutomaticDBKnihUrl(bookname);
+            dbknih = dataBaseKnihService.getAutomaticDBKnihUrl(bookname);
             loadDescription = dbknih;
         }
 
@@ -76,34 +80,29 @@ public class EditFilePageService {
 
 
         // load and fill from DBKnih
+        String url = (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ);
         if ((StringUtils.isNotBlank(loadImage)
                 || StringUtils.isNotBlank(loadDescription)
                 || StringUtils.isNotBlank(loadAll)
                 || StringUtils.isNotBlank(loadAllClose)
-        ) && StringUtils.isNotBlank((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
-            try {
+        ) && StringUtils.isNotBlank(url)) {
+            Document doc = dataBaseKnihService.getDocument(url);
 
-                Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
+            Elements elements;
 
-                Elements elements;
-
-                if (StringUtils.isNotBlank(loadImage)
-                        || StringUtils.isNotBlank(loadAll)
-                        || StringUtils.isNotBlank(loadAllClose)) {
-                    elements = doc.select("img.kniha_img"); // obal knihy
-                    for (Element element : elements) {
-                        frmCover = element.attr("src");
-                    }
+            if (StringUtils.isNotBlank(loadImage)
+                    || StringUtils.isNotBlank(loadAll)
+                    || StringUtils.isNotBlank(loadAllClose)) {
+                elements = doc.select("img.kniha_img"); // obal knihy
+                for (Element element : elements) {
+                    frmCover = element.attr("src");
                 }
+            }
 
-                if (StringUtils.isNotBlank(loadDescription)
-                        || StringUtils.isNotBlank(loadAll)
-                        || StringUtils.isNotBlank(loadAllClose)) {
-                    frmDescription = Tools.getDBKnihDescription(doc);
-                }
-
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
+            if (StringUtils.isNotBlank(loadDescription)
+                    || StringUtils.isNotBlank(loadAll)
+                    || StringUtils.isNotBlank(loadAllClose)) {
+                frmDescription = dataBaseKnihService.getDBKnihDescription(url);
             }
         }
 

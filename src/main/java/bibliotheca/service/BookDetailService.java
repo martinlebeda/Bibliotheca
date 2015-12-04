@@ -11,19 +11,23 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.pegdown.PegDownProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +45,9 @@ public class BookDetailService {
 
     @Autowired
     private UuidService uuidService;
+
+    @Autowired
+    DataBaseKnihService dataBaseKnihService;
 
     public VOFileDetail getVoFileDetail(String path, String key) {
         File file = new File(path);
@@ -94,41 +101,45 @@ public class BookDetailService {
         final String desc = getDesc(voFileList);
 
         Map<String, Object> metadata = Tools.getStringStringMap(path, FilenameUtils.getBaseName(voFileList.get(0).getName()));
-
-        @SuppressWarnings("unchecked") final VOFileDetail fileDetail = new VOFileDetail(uuid, key, cover, desc,
-                (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ),
-                (String) metadata.get(Tools.METADATA_KEY_NAZEV),
-                (String) metadata.get(Tools.METADATA_KEY_SERIE),
-                (List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS)
-        );
+        final VOFileDetail fileDetail = new VOFileDetail(uuid, key, cover, desc, metadata);
 
         //noinspection unchecked
-        if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())
-                && (StringUtils.isBlank((String) metadata.get(Tools.METADATA_KEY_NAZEV))
-                || CollectionUtils.isEmpty((List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS)))
-                ) {
-            try {
-                Document doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
-                if (loadFromDBKnih(metadata, fileDetail, doc)) {
-                    Tools.writeMetaData(path, fileDetail.getName(), metadata);
+        if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())) {
+            boolean metadataChanged = false; // TODO Lebeda - odstranit a použít příznak přímo v detailu
+
+            if (StringUtils.isBlank((String) metadata.get(Tools.METADATA_KEY_NAZEV))) {
+                if (dataBaseKnihService.loadFromDBKnih(metadata, fileDetail, fileDetail.getDbknihUrl())) {
+                    metadataChanged = true;
                 }
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
             }
-        }
 
-        // automatic load cover if missing
-        if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())
-                && !fileDetail.getCoverExists()) {
-            Document doc;
-            try {
-                doc = Jsoup.connect((String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ)).timeout(Tools.CONNECT_TIMEOUT_MILLIS).get();
+            //noinspection unchecked
+            if (CollectionUtils.isEmpty((List<String>) metadata.get(Tools.METADATA_KEY_AUTHORS))) {
+                if (dataBaseKnihService.loadFromDBKnih(metadata, fileDetail, fileDetail.getDbknihUrl())) {
+                    metadataChanged = true;
+                }
+            }
 
+            if (StringUtils.isBlank(fileDetail.getHodnoceniDbPocet()) || StringUtils.isBlank(fileDetail.getHodnoceniDbProcento())) {
+                fileDetail.setHodnoceniDbPocet(dataBaseKnihService.getHodnoceniDbPocet(fileDetail.getDbknihUrl()));
+                fileDetail.setHodnoceniDbProcento(dataBaseKnihService.getHodnoceniDbProcento(fileDetail.getDbknihUrl()));
+
+                // TODO Lebeda - zajistit ukládání metadat přímo ve VO
+                metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_POCET, fileDetail.getHodnoceniDbPocet());
+                metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_PROCENTO, fileDetail.getHodnoceniDbProcento());
+                metadataChanged = true;
+            }
+
+            if (metadataChanged) {
+                Tools.writeMetaData(path, fileDetail.getName(), metadata);
+            }
+
+            // automatic load cover if missing
+            if (!fileDetail.getCoverExists()) {
                 Elements elements;
                 String frmCover = null;
 
-
-                elements = doc.select("img.kniha_img"); // obal knihy
+                elements = dataBaseKnihService.getDocument(fileDetail.getDbknihUrl()).select("img.kniha_img"); // obal knihy
                 for (Element element : elements) {
                     frmCover = element.attr("src");
                 }
@@ -138,11 +149,10 @@ public class BookDetailService {
                     VOFile coverDb = Tools.downloadCover(baseFileName, frmCover);
                     fileDetail.setCover(coverDb.getPath());
                 }
-
-
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
             }
+
+            // TODO Lebeda - dopsat automatický zápis metadat
+
         }
 
         final String name = file.getName();
@@ -216,36 +226,4 @@ public class BookDetailService {
         return Paths.get(beleTgt.getAbsolutePath(), firstLetter, author).toString();
     }
 
-    boolean loadFromDBKnih(Map<String, Object> metadata, VOFileDetail fileDetail, Document doc) {
-        boolean saveChange = false;
-
-        String nazev = Tools.getDBKnihNazev(doc);
-        if (StringUtils.isNotBlank(nazev)) {
-            if (fileDetail != null) {
-                fileDetail.setNazev(nazev);
-            }
-            metadata.put(Tools.METADATA_KEY_NAZEV, nazev);
-            saveChange = true;
-        }
-
-        String serie = Tools.getDBKnihSerie(doc);
-        if (StringUtils.isNotBlank(serie)) {
-            if (fileDetail != null) {
-                fileDetail.setSerie(serie);
-            }
-            metadata.put(Tools.METADATA_KEY_SERIE, serie);
-            saveChange = true;
-        }
-
-        List<String> authors = Tools.getDBKnihAuthors(doc);
-        if (CollectionUtils.isNotEmpty(authors)) {
-            if (fileDetail != null) {
-                fileDetail.getAuthors().clear();
-                fileDetail.getAuthors().addAll(authors);
-            }
-            metadata.put(Tools.METADATA_KEY_AUTHORS, authors);
-            saveChange = true;
-        }
-        return saveChange;
-    }
 }
