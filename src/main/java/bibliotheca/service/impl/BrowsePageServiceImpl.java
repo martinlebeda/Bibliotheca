@@ -16,8 +16,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -199,7 +197,6 @@ public class BrowsePageServiceImpl implements BrowsePageService {
                 .collect(Collectors.toList());
         model.put("mhtFiles", mhtFiles);
 
-        // TODO Lebeda - generovat tagy pro šablonu
         return model;
     }
 

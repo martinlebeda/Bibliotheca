@@ -6,6 +6,11 @@ package bibliotheca.config;
  */
 public interface ConfigService {
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Load and provide configuration object.
+     * If configuration is not loaded, automaticaly load this from disk.
+     *
+     * @return configuration object
+     */
     VOConfig getConfig();
 }

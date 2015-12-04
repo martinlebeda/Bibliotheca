@@ -11,9 +11,32 @@ import java.util.List;
  */
 public interface BookDetailService {
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Create object with detail file description
+     *
+     * @param path       path for load
+     * @param key        name of book files without suffix
+     * @param voFileList list of files loaded from path (usualy loaded once for all books in path)
+     * @return book description
+     */
     VOFileDetail getVoFileDetail(String path, String key, List<VOFile> voFileList);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Create object with detail file description.
+     * List of files in path will be loaded internally.
+     *
+     * @param path       path for load
+     * @param key        name of book files without suffix
+     * @return book description
+     */
+    VOFileDetail getVoFileDetail(String path, String key);
+
+    /**
+     * Create target path for fiction books.
+     * For base of path use "fictionArchive" from config.
+     *
+     * @param author author in schema "surrname, firstname [middlenames...]"
+     * @return path for move book
+     */
     String getTgtPathByAuthor(String author);
 }

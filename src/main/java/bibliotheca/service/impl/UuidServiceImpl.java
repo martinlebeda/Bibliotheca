@@ -21,7 +21,9 @@ import java.util.*;
 @Service
 public class UuidServiceImpl implements UuidService {
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Cache for books uuid
+     */
     private Map<String, VOUuid> indexCache = new HashMap<>();
 
     @Override
@@ -45,7 +47,13 @@ public class UuidServiceImpl implements UuidService {
         return result;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Create new UUID for book and store it to uuid file for next use.
+     *
+     * @param file the uuid file - "name of book file.uuid", if exists, will be overriden
+     * @return new uuid
+     * @throws IOException if cannot write uuid file
+     */
     private static String createNewUUID(File file) throws IOException {
         String result;
         result = UUID.randomUUID().toString();
@@ -55,7 +63,10 @@ public class UuidServiceImpl implements UuidService {
         return result;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Periodicaly cleaning cache from old records.
+     * Remove from map records older then Tools.CLEAR_CACHE_DELAY.
+     */
     @Scheduled(fixedDelay = Tools.CLEAR_CACHE_DELAY)
     public void clearCache() {
         List<VOUuid> tmpVoUuidList = new ArrayList<>(indexCache.values());

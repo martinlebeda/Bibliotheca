@@ -190,8 +190,9 @@
                         <a class="spaceAround"
                            th:unless="${#strings.isEmpty(p.targetPath)}"
                            th:href="|browse?path=${p.targetPath}|">...</a>
+
                         <a class="spaceAround" th:if="${p.dbknihUrlExists}" th:href="${p.dbknihUrl}"
-                           th:text="|${p.hodnoceniDbProcento}&percnt;(${p.hodnoceniDbPocet}) DatabázeKnih.cz|"
+                           th:text="|${#strings.defaultString(p.hodnoceniDbProcento,'&minus; ')}&percnt; (${#strings.defaultString(p.hodnoceniDbPocet,0)}) DatabázeKnih.cz|"
                            target="_blank">DatabázeKnih.cz</a>
                         <a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"
                            th:href="|browse?path=${path}&amp;tryDB=${p.name}|">TryDB</a>

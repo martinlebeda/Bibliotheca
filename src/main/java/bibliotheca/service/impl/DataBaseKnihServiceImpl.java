@@ -126,10 +126,10 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
     }
 
     @Override
-    public String getHodnoceniDbPocet(String dbknihUrl) {
+    public String getHodnoceniDbPocet(String url) {
         String result = "";
         Elements elements;
-        elements = getDocument(dbknihUrl).select("#voixis > div > a.bpointsm");
+        elements = getDocument(url).select("#voixis > div > a.bpointsm");
         for (Element element : elements) {
             result = element.text().replaceAll(" hodnocení", "");
         }
@@ -137,10 +137,10 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
     }
 
     @Override
-    public String getHodnoceniDbProcento(String dbknihUrl) {
+    public String getHodnoceniDbProcento(String url) {
         String result = "";
         Elements elements;
-        elements = getDocument(dbknihUrl).select("#voixis > div > a.bpoints");
+        elements = getDocument(url).select("#voixis > div > a.bpoints");
         for (Element element : elements) {
             result = element.text().replaceAll("%", "");
         }

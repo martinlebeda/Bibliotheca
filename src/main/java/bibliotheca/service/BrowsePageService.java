@@ -8,7 +8,12 @@ import java.util.Map;
  */
 public interface BrowsePageService {
 
-    /// TODO - JavaDoc - Lebeda
+    /**
+     * Get model for browsePage
+     *
+     * @deprecated will be break to more atomic and interface will be dramatically changed
+     */
+    @Deprecated
     Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
                                             final String target, final String tidyup, final String delete,
                                             final String basename, String tryDB);

@@ -8,7 +8,11 @@ import java.util.Map;
  */
 public interface EditFilePageService {
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Get model for browsePage
+     * @deprecated will be replaced by ajax rutines
+     */
+    @Deprecated
     Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
-                                            String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih);
+                                 String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih);
 }

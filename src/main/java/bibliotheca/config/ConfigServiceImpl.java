@@ -25,7 +25,6 @@ public class ConfigServiceImpl implements ConfigService {
             String homeDir = System.getProperty("user.home");
             final File configFile = Paths.get(homeDir, CONFIG_FILE).toFile();
 
-            // TODO Lebeda - změnit konfiguraci do yaml properties
             Serializer serializer = new Persister();
             try {
                 config = serializer.read(VOConfig.class, configFile);

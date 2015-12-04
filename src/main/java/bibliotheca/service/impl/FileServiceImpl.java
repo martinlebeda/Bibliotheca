@@ -27,8 +27,6 @@ import java.util.zip.ZipFile;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
-// TODO Lebeda - extrahovat interface
-// TODO Lebeda - pročistit
 @Service
 public class FileServiceImpl implements FileService {
 

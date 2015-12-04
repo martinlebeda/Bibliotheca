@@ -37,6 +37,7 @@ public class Tools {
     public static final String METADATA_KEY_SERIE = "serie";
     public static final String METADATA_KEY_POZNAMKA = "poznamka";
     public static final String METADATA_KEY_AUTHORS = "authors";
+
     public static final int CLEAR_CACHE_DELAY = 3600000; // in miliseconds
 
     public static String removeDiacritics(String s) {
