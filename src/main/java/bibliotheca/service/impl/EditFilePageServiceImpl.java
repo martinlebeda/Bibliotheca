@@ -120,7 +120,7 @@ public class EditFilePageServiceImpl implements EditFilePageService {
         // create description if need
         String desc = getRawDesc(voFileList);
         if (StringUtils.isNoneBlank(frmDescription) && (!frmDescription.equals(desc))) {
-            desc = Tools.createDescription(baseFileName, frmDescription);
+            desc = Tools.writeDescription(path, basename, frmDescription);
         }
 
         fileService.fillNavigatorData(model, listFiles[0], false);

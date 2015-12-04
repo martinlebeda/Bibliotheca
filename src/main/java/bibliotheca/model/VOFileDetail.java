@@ -21,7 +21,7 @@ public class VOFileDetail {
     private String cover;
     private String dbknihUrl;
     private final List<VOFile> files = new ArrayList<>();
-    private final String desc;
+    private String desc;
     private final String path;
     private final List<String> targets = new ArrayList<>();
     private List<VODevice> devices = new ArrayList<>();
@@ -81,6 +81,10 @@ public class VOFileDetail {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 
     public String getEncodedName() {
@@ -150,9 +154,9 @@ public class VOFileDetail {
         return author;
     }
 
-    public boolean getCoverExists() {
-        return StringUtils.isNoneBlank(cover);
-    }
+//    public boolean getCoverExists() {
+//        return StringUtils.isNotBlank(cover);
+//    }
 
     public String getDbknihUrl() {
         return dbknihUrl;

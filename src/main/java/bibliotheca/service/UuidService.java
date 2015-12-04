@@ -1,5 +1,7 @@
 package bibliotheca.service;
 
+import bibliotheca.model.VOUuid;
+
 /**
  * Routines for manipulate with uuid of books.
  *
@@ -18,4 +20,6 @@ public interface UuidService {
      */
     String getUuid(String path, String key);
 
+    // TODO - JavaDoc - Lebeda
+    VOUuid getByUuid(String uuid);
 }

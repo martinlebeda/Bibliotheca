@@ -17,4 +17,7 @@ public interface BrowsePageService {
     Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
                                             final String target, final String tidyup, final String delete,
                                             final String basename, String tryDB);
+
+    // TODO - JavaDoc - Lebeda
+    Map<String, ?> tryDb(String uuid);
 }

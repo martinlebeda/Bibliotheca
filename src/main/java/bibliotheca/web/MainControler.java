@@ -70,6 +70,13 @@ public class MainControler {
         return "BrowsePage";
     }
 
+    @RequestMapping("/tryDb")
+    public String browse(@RequestParam("id") String id, final Model model) {
+        model.addAllAttributes(browsePageService.tryDb(id));
+//        return "BrowsePage";
+        return "BrowsePage :: bookitem";
+    }
+
     @RequestMapping("/editDir")
     public String editDir(
             @RequestParam("path") String path,

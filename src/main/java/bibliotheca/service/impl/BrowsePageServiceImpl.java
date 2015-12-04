@@ -4,10 +4,8 @@ import bibliotheca.config.ConfigService;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
-import bibliotheca.service.BookDetailService;
-import bibliotheca.service.BrowsePageService;
-import bibliotheca.service.DataBaseKnihService;
-import bibliotheca.service.FileService;
+import bibliotheca.model.VOUuid;
+import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -47,6 +45,9 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
     @Autowired
     private DataBaseKnihService dataBaseKnihService;
+
+    @Autowired
+    private UuidService uuidService;
 
     @Override
     public Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
@@ -197,6 +198,33 @@ public class BrowsePageServiceImpl implements BrowsePageService {
                 .sorted((o1, o2) -> o1.getName().compareTo(o2.getName()))
                 .collect(Collectors.toList());
         model.put("mhtFiles", mhtFiles);
+
+        return model;
+    }
+
+    @Override
+    public Map<String, Object> tryDb(String uuid) {
+        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
+
+        VOUuid voUuid = uuidService.getByUuid(uuid);
+        String path = voUuid.getPath();
+        String name = voUuid.getName();
+
+        File file = new File(path);
+        model.put(Tools.PARAM_PATH, file.getAbsolutePath());
+        try {
+            model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+
+        VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
+        dataBaseKnihService.tryDb(fd);
+
+//        List<VOFileDetail> fileDetails = new ArrayList<>();
+//        fileDetails.add(fd);
+//        model.put("fileDetails", fileDetails);
+        model.put("p", fd);
 
         return model;
     }

@@ -40,7 +40,7 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
         fileDetail.setHodnoceniDbProcento(getHodnoceniDbProcento(fileDetail.getDbknihUrl()));
 
         // automatic load cover if missing
-        if (!fileDetail.getCoverExists()) {
+        if (StringUtils.isBlank(fileDetail.getCover())) {
             Elements elements;
             String frmCover = null;
 
@@ -86,9 +86,9 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
 
             Tools.writeMetaData(fileDetail.getPath(), fileDetail.getName(), fileDetail.getMetadata());
 
-            if (StringUtils.isNotBlank(description)) {
-                String baseFileName = Paths.get(fileDetail.getPath(), fileDetail.getName()).toString();
-                Tools.createDescription(baseFileName, description);
+            if (StringUtils.isNotBlank(description) && StringUtils.isBlank(fileDetail.getDesc())) {
+                Tools.writeDescription(fileDetail.getPath(), fileDetail.getName(), description);
+                fileDetail.setDesc(description);
             }
         }
     }

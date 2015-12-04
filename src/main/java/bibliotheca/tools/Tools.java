@@ -107,7 +107,8 @@ public class Tools {
         return newPath;
     }
 
-    public static String createDescription(final String baseFileName, final String frmDescription) {
+    public static String writeDescription(final String path, String name, final String frmDescription) {
+        String baseFileName = Paths.get(path, name).toString();
         final String desc;
         try {
         final File readme = new File(baseFileName + ".mkd");
@@ -131,6 +132,11 @@ public class Tools {
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
             fos.close();
             cover = new VOFile(covername);
+
+            File nocoverfile = new File(baseFileName + ".nocover");
+            if (nocoverfile.exists()) {
+                nocoverfile.delete();
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

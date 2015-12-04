@@ -47,6 +47,11 @@ public class UuidServiceImpl implements UuidService {
         return result;
     }
 
+    @Override
+    public VOUuid getByUuid(String uuid) {
+        return indexCache.get(uuid);
+    }
+
     /**
      * Create new UUID for book and store it to uuid file for next use.
      *

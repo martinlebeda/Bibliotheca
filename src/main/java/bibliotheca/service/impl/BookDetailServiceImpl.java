@@ -123,7 +123,7 @@ public class BookDetailServiceImpl implements BookDetailService {
             }
 
             // automatic load cover if missing
-            if (!fileDetail.getCoverExists()) {
+            if (StringUtils.isBlank(fileDetail.getCover())) {
                 Elements elements;
                 String frmCover = null;
 
