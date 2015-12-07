@@ -33,7 +33,7 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
     private Map<String, Document> cacheDoc = new HashMap<>();
 
     @Override
-    public void loadFromDBKnih(@NotNull VOFileDetail fileDetail) {
+    public void loadFromDBKnih(@NotNull VOFileDetail fileDetail, boolean force) {
         fileDetail.setNazev(getNazev(fileDetail.getDbknihUrl()));
         fileDetail.setSerie(getSerie(fileDetail.getDbknihUrl()));
         fileDetail.replaceAuthors(getAuthors(fileDetail.getDbknihUrl()));
@@ -41,7 +41,22 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
         fileDetail.setHodnoceniDbProcento(getHodnoceniDbProcento(fileDetail.getDbknihUrl()));
 
         // automatic load cover if missing
-        if (StringUtils.isBlank(fileDetail.getCover())) {
+        downloadCover(fileDetail, force);
+
+        String description = getDBKnihDescription(fileDetail.getDbknihUrl());
+        if ((StringUtils.isNotBlank(description) && StringUtils.isBlank(fileDetail.getDesc())) || force) {
+            Tools.writeDescription(fileDetail.getPath(), fileDetail.getName(), description);
+            fileDetail.setDesc(description);
+        }
+
+        if (fileDetail.isDirty()) {
+            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getName(), fileDetail.getMetadata());
+        }
+    }
+
+    @Override
+    public void downloadCover(@NotNull VOFileDetail fileDetail, boolean force) {
+        if (StringUtils.isBlank(fileDetail.getCover()) || force) {
             Elements elements;
             String frmCover = null;
 
@@ -56,10 +71,34 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
                 fileDetail.setCover(coverDb.getPath());
             }
         }
+    }
 
-        if (fileDetail.isDirty()) {
-            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getName(), fileDetail.getMetadata());
+    @Override
+    public void clearMetadata(String path, String key) {
+        File coverFile = Paths.get(path, key + ".jpg").toFile();
+        if (coverFile.exists()) {
+            coverFile.delete();
         }
+
+        File noCoverFile = Paths.get(path, key + ".nocover").toFile();
+        if (noCoverFile.exists()) {
+            noCoverFile.delete();
+        }
+
+        File readmeFile = Paths.get(path, key + ".mkd").toFile();
+        if (readmeFile.exists()) {
+            readmeFile.delete();
+        }
+
+        File metadataFile = Paths.get(path, key + ".yaml").toFile();
+        if (metadataFile.exists()) {
+            metadataFile.delete();
+        }
+    }
+
+    @Override
+    public void loadFromDBKnih(VOFileDetail fileDetail) {
+       loadFromDBKnih(fileDetail, false);
     }
 
 

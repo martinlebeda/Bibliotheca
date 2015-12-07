@@ -4,6 +4,7 @@ import bibliotheca.model.VOChoose;
 import bibliotheca.model.VOFileDetail;
 import org.jsoup.nodes.Document;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -22,6 +23,14 @@ public interface DataBaseKnihService {
      * @param fileDetail detail of book
      */
     void loadFromDBKnih(VOFileDetail fileDetail);
+
+    /**
+     * fill all available information from databazeknih.cz to fileDetail and save them to disk
+     *
+     * @param fileDetail detail of book
+     * @param force force reload metadata
+     */
+    void loadFromDBKnih(VOFileDetail fileDetail, boolean force);
 
     /**
      * Get raw loaded data from databazeknih.cz.
@@ -86,4 +95,10 @@ public interface DataBaseKnihService {
 
     // TODO - JavaDoc - Lebeda
     List<VOChoose> getChooseDbModalList(String bookname);
+
+    // TODO - JavaDoc - Lebeda
+    void downloadCover(@NotNull VOFileDetail fileDetail, boolean force);
+
+    // TODO - JavaDoc - Lebeda
+    void clearMetadata(String path, String key);
 }

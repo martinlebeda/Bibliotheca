@@ -77,12 +77,11 @@
                             <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="file-external_search"
-                                   th:href="|https://www.google.cz/search?q=${navigatorFile}|"
+                                <a th:href="|https://www.google.cz/search?q=${navigatorFile}|"
                                    target="_blank">Google</a>
                             </li>
                             <li>
-                                <a class="file-external_search" th:href="|editDir?path=${path}|">Edit</a>
+                                <a th:href="|editDir?path=${path}|">Edit</a>
                             </li>
                         </ul>
                     </li>
@@ -181,7 +180,7 @@
                                                                       th:text="${#strings.toLowerCase(t)}">mobi</a>
                                     </li>
                                     <li role="presentation" class="divider"></li>
-                                    <li><a class="file-external_search"
+                                    <li><a
                                            th:href="|view${encodedPath}/${p.encodedName}.htmlz/pack/index.html|"
                                            target="_blank">View</a></li>
                                 </ul>
@@ -202,39 +201,41 @@
                             <a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"
                                onclick="tryDb('123')" th:onclick="'javascript:tryDb(\'' + ${p.uuid} + '\');'">TryDB</a>
 
-
                             <div class="dropdown dropup pull-right spaceAround">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
                                     <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="file-external_search" href="https://www.google.cz/search?q=${p.name}"
+                                    <li><a href="https://www.google.cz/search?q=${p.name}"
                                            target="_blank">Google</a></li>
-                                    <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
-                                                                            onclick="chooseDb('123', 'title', 'author');"
-                                                                            th:onclick="'javascript:chooseDb(\'' + ${p.uuid} + '\', \'' + ${p.bookname} + '\', \'' + ${p.bookauthor} + '\');'">
-                                                                            DatabázeKnih</a> </li>
-                                    <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
+                                    <li><a
+                                           onclick="chooseDb('123', 'title', 'author');"
+                                           th:onclick="'javascript:chooseDb(\'' + ${p.uuid} + '\', \'' + ${p.bookname} + '\', \'' + ${p.bookauthor} + '\');'">
+                                        DatabázeKnih</a></li>
+                                    <li th:if="${p.dbknihUrlExists}"><a th:onclick="'javascript:downloadCover(\'' + ${p.uuid} + '\');'">Refresh cover</a></li>
+                                    <li th:if="${p.dbknihUrlExists}"><a th:onclick="'javascript:clearMetadata(\'' + ${p.uuid} + '\');'">Clear metadata</a></li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a
                                                                             th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}"
-                                                                            target="_blank">DatabázeKnih - title</a></li>
-                                    <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
+                                                                            target="_blank">DatabázeKnih - title</a>
+                                    </li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a
                                                                             th:href="@{|http://www.databazeknih.cz/search?q=${p.bookauthor}&amp;in=authors|}"
-                                                                            target="_blank">DatabázeKnih - authors</a></li>
+                                                                            target="_blank">DatabázeKnih - authors</a>
+                                    </li>
                                     <li role="presentation" class="divider"></li>
-                                    <li><a class="file-external_search"
+                                    <li><a
                                            th:href="|view${path}/${p.name}.htmlz/pack/index.html|"
                                            target="_blank">View</a></li>
-                                    <li><a class="file-external_search"
+                                    <li><a
                                            th:href="|editFile?path=${path}&amp;basename=${p.name}|">Edit</a></li>
-                                    <li th:each="d : ${p.devices}"><a class="file-external_search"
+                                    <li th:each="d : ${p.devices}"><a
                                                                       th:href="|browse?path=${path}&amp;basename=${p.name}&amp;target=${d.format}&amp;devicePath=${d.path}|"
                                                                       th:text="${d.name}">PocketBook</a></li>
 
-                                    <li><a class="file-external_search" th:if="${p.tidyUp}"
+                                    <li><a th:if="${p.tidyUp}"
                                            th:href="|browse?path=${path}&amp;tidyup=${p.name}|"
                                            th:text="|Move to &quot;${p.bookauthor}&quot;|">Move to ...</a></li>
                                     <li role="presentation" class="divider"></li>
-                                    <li><a class="file-external_search"
-                                           th:href="|browse?path=${path}&amp;delete=${p.name}|">Delete</a></li>
+                                    <li><a th:onclick="'javascript:deleteBook(\'' + ${p.uuid} + '\');'">Delete</a> </li>
                                 </ul>
                             </div>
 
@@ -248,64 +249,69 @@
 </div>
 
 <div class="modal fade" id="chooseDbModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Choose from database</h4>
-      </div>
-      <div class="modal-body">
-          <div id="chooseDbModalList">
-              <th:block th:unless="${#lists.isEmpty(chlist)}" th:fragment="chooseListItem">
-                  <div th:each="l : ${chlist}" class="row chooseListItem" th:onclick="'javascript:saveDbUrl(\'' + ${l.url} + '\');'">
-                      <div class="col-xs-2">
-                          <img th:src="${l.urlimg}"
-                               src="http://pingendo.github.io/pingendo-bootstrap/assets/placeholder.png"
-                               class="img-responsive"/>
-                      </div>
-                      <div class="col-xs-10">
-                        <div class="row"><a th:href="${l.url}" href="#" th:text="${l.title}">title</a></div>
-                        <div class="row" th:text="${l.other}">2005, author</div>
-                      </div>
-                  </div>
-              </th:block>
-          </div>
-          <hr/>
-          <form class="form-inline" id="chooseDbModalInlineForm">
-            <div class="form-group">
-              <label class="chooseDbModalInlineFormItem" for="chooseDbModalUrl">URL:</label>
-              <input type="text" class="form-control" id="chooseDbModalUrl" placeholder="url from Databazeknih.cz"/>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Choose from database</h4>
             </div>
-            <input type="hidden" id="chooseDbModalIdBook" name="chooseDbModalUrl" value="chooseDbModalUrl"/>
-            <button type="button" class="btn btn-default chooseDbModalInlineFormItem" onclick="saveDbUrl();">Save</button>
-          </form>
-          <a class="" id="chooseDbModalTitleUrl" href="#" target="_blank">DatabázeKnih - title</a>
-          <a class="" id="chooseDbModalAuthorUrl" href="#" target="_blank">DatabázeKnih - authors</a>
-      </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <div class="modal-body">
+                <div id="chooseDbModalList">
+                    <th:block th:unless="${#lists.isEmpty(chlist)}" th:fragment="chooseListItem">
+                        <div th:each="l : ${chlist}" class="row chooseListItem"
+                             th:onclick="'javascript:saveDbUrl(\'' + ${l.url} + '\');'">
+                            <div class="col-xs-2">
+                                <img th:src="${l.urlimg}"
+                                     src="http://pingendo.github.io/pingendo-bootstrap/assets/placeholder.png"
+                                     class="img-responsive"/>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="row"><a th:href="${l.url}" href="#" th:text="${l.title}">title</a></div>
+                                <div class="row" th:text="${l.other}">2005, author</div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+                <hr/>
+                <form class="form-inline" id="chooseDbModalInlineForm">
+                    <div class="form-group">
+                        <label class="chooseDbModalInlineFormItem" for="chooseDbModalUrl">URL:</label>
+                        <input type="text" class="form-control" id="chooseDbModalUrl"
+                               placeholder="url from Databazeknih.cz"/>
+                    </div>
+                    <input type="hidden" id="chooseDbModalIdBook" name="chooseDbModalUrl" value="chooseDbModalUrl"/>
+                    <button type="button" class="btn btn-default chooseDbModalInlineFormItem" onclick="saveDbUrl();">
+                        Save
+                    </button>
+                </form>
+                <a class="" id="chooseDbModalTitleUrl" href="#" target="_blank">DatabázeKnih - title</a>
+                <a class="" id="chooseDbModalAuthorUrl" href="#" target="_blank">DatabázeKnih - authors</a>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
-  </div>
 </div>
 
 <!--dialog - sablona-->
 <!--<div class="modal fade" tabindex="-1" role="dialog">-->
-  <!--<div class="modal-dialog">-->
-    <!--<div class="modal-content">-->
-      <!--<div class="modal-header">-->
-        <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
-        <!--<h4 class="modal-title">Modal title</h4>-->
-      <!--</div>-->
-      <!--<div class="modal-body">-->
-        <!--<p>One fine body&hellip;</p>-->
-      <!--</div>-->
-      <!--<div class="modal-footer">-->
-        <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-        <!--<button type="button" class="btn btn-primary">Save changes</button>-->
-      <!--</div>-->
-    <!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
-  <!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
+<!--<div class="modal-dialog">-->
+<!--<div class="modal-content">-->
+<!--<div class="modal-header">-->
+<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+<!--<h4 class="modal-title">Modal title</h4>-->
+<!--</div>-->
+<!--<div class="modal-body">-->
+<!--<p>One fine body&hellip;</p>-->
+<!--</div>-->
+<!--<div class="modal-footer">-->
+<!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+<!--<button type="button" class="btn btn-primary">Save changes</button>-->
+<!--</div>-->
+<!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
+<!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
 <!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
 
 </body>

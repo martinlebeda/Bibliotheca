@@ -261,7 +261,9 @@ public class VOFileDetail {
 
     public void replaceAuthors(List<String> authors) {
         this.authors.clear();
-        this.authors.addAll(authors);
+        if (CollectionUtils.isNotEmpty(authors)) {
+            this.authors.addAll(authors);
+        }
         this.dirty = true;
     }
 }

@@ -6,10 +6,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Paths;
@@ -46,6 +48,7 @@ public class Tools {
 
     /**
      * Check if client coming from localhost
+     *
      * @return true if client coming from localhost
      */
     public static boolean isLocalHost() {
@@ -54,10 +57,21 @@ public class Tools {
         return false;
     }
 
-    public static HashMap<String, Object> getDefaultModel(final String title) {
+    // TODO - JavaDoc - Lebeda
+    public static HashMap<String, Object> getDefaultModel(final String title, String path) {
         final HashMap<String, Object> model = new HashMap<>();
         model.put("title", title);
         model.put("isLocal", isLocalHost());
+
+        if (StringUtils.isNotBlank(path)) {
+            model.put(Tools.PARAM_PATH, path);
+            try {
+                model.put("encodedPath", URLEncoder.encode(path, "UTF-8").replaceAll("%2F", "/"));
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
         return model;
     }
 
@@ -111,7 +125,7 @@ public class Tools {
         String baseFileName = Paths.get(path, name).toString();
         final String desc;
         try {
-        final File readme = new File(baseFileName + ".mkd");
+            final File readme = new File(baseFileName + ".mkd");
             final FileOutputStream outputStream = new FileOutputStream(readme);
             IOUtils.write(frmDescription, outputStream);
             outputStream.close();
@@ -185,7 +199,6 @@ public class Tools {
         }
         return metadata;
     }
-
 
 
     public static void writeMetaData(String path, String basename, Map<String, Object> metadata) {

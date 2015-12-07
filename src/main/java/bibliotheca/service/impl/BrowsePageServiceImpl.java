@@ -52,7 +52,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     public Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
                                         final String target, final String tidyup, final String delete,
                                         final String basename, String tryDB) {
-        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
+        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());
@@ -203,7 +203,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
     @Override
     public Map<String, Object> tryDb(String path, String name) {
-        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
+        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());
@@ -226,7 +226,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
     @Override
     public Map<String, Object> loadItemModel(String path, String name) {
-        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
+        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());

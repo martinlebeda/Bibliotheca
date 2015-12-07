@@ -38,7 +38,7 @@ public class EditFilePageServiceImpl implements EditFilePageService {
     @Override
     public Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
                                         String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih) {
-        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - edit file");
+        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - edit file", path);
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());

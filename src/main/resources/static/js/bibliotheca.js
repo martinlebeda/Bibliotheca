@@ -23,8 +23,30 @@ function chooseDb(id, title, autor) {
 function saveDbUrl(url) {
     url = url || $('#chooseDbModalUrl').val(); // if not param, get it from frm
     var id = $('#chooseDbModalIdBook').val();
-    $('#' + id).load("/saveDbUrl", {'id': id, 'url': url});
+    $('#' + id).load("/saveDbUrl", {'id': id, 'url': url}, reloadImageById(id));
     $('#chooseDbModal').modal('hide');
+}
+
+// force download cower from databazeknih.cz
+function downloadCover(id) {
+    $('#' + id).load("/downloadCover", {'id': id}, reloadImageById(id));
+}
+
+// clear metadata
+function clearMetadata(id) {
+    $('#' + id).load("/clearMetadata", {'id': id});
+}
+
+// delete book
+function deleteBook(id) {
+    $.get( "/deleteBook", {'id': id}, function( data ) {
+        $('#' + id).remove();
+    });
+}
+
+// force reload cover image
+function reloadImageById(id) {
+    $('#' + id + ' > div.col-xs-2 > img').attr('src', $('img').attr('src') + '?' + Math.random());
 }
 
 //$('#myModal').modal('toggle');

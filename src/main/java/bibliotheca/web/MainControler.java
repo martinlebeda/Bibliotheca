@@ -96,13 +96,37 @@ public class MainControler {
         return "BrowsePage :: chooseListItem";
     }
 
+    @RequestMapping("/downloadCover")
+    public String downloadCover(@RequestParam("id") String id, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        dataBaseKnihService.downloadCover(fd, true);
+        model.addAttribute("p", fd);
+        return "BrowsePage :: bookitem";
+    }
+
+    @RequestMapping("/clearMetadata")
+    public String clearMetadata(@RequestParam("id") String id, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        dataBaseKnihService.clearMetadata(voUuid.getPath(), voUuid.getName());
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        model.addAttribute("p", fd);
+        return "BrowsePage :: bookitem";
+    }
+
     @RequestMapping(value = "/saveDbUrl")
     public String saveDbUrl(@RequestParam("id") String id, @RequestParam("url") String url, final Model model) {
         VOUuid voUuid = uuidService.getByUuid(id);
 
         editFilePageService.saveDbUrl(voUuid.getPath(), voUuid.getName(), url);
 
-        model.addAllAttributes(browsePageService.loadItemModel(voUuid.getPath(), voUuid.getName()));
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        dataBaseKnihService.loadFromDBKnih(fd, true);
+        model.addAttribute("p", fd);
+
+        model.addAllAttributes(Tools.getDefaultModel("Bibliotheca - Browse fiction", voUuid.getPath()));
+
+
         return "BrowsePage :: bookitem";
     }
 
@@ -111,7 +135,7 @@ public class MainControler {
             @RequestParam("path") String path,
             @RequestParam("bookname") String bookname,
             final Model model) {
-        final HashMap<String, Object> oldModel = Tools.getDefaultModel("Bibliotheca - Browse fiction");
+        final HashMap<String, Object> oldModel = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
         File file = new File(path);
         oldModel.put(Tools.PARAM_PATH, file.getAbsolutePath());
 
@@ -129,7 +153,7 @@ public class MainControler {
                         .collect(Collectors.toList())
         );
 
-        model.addAllAttributes(Tools.getDefaultModel("Bibliotheca - edit directory"));
+        model.addAllAttributes(Tools.getDefaultModel("Bibliotheca - edit directory", null));
         model.addAllAttributes(oldModel);
 
         return "EditDirPage";

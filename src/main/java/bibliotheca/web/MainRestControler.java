@@ -1,15 +1,19 @@
 package bibliotheca.web;
 
 import bibliotheca.model.VOFile;
-import bibliotheca.service.BrowsePageService;
-import bibliotheca.service.FileService;
+import bibliotheca.model.VOFileDetail;
+import bibliotheca.model.VOUuid;
+import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.imageio.ImageIO;
@@ -17,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -35,6 +40,15 @@ public class MainRestControler {
 
     @Autowired
     BrowsePageService browsePageService;
+
+    @Autowired
+    UuidService uuidService;
+
+    @Autowired
+    BookDetailService bookDetailService;
+
+    @Autowired
+    DataBaseKnihService dataBaseKnihService;
 
     @RequestMapping("/cover")
     public byte[] cover(@RequestParam("path") String path) {
@@ -96,6 +110,30 @@ public class MainRestControler {
 
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    // TODO - JavaDoc - Lebeda
+    @RequestMapping("/deleteBook")
+    public void deleteBook(@RequestParam("id") String id) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        String path = voUuid.getPath();
+        String name = voUuid.getName();
+
+        VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
+        List<VOFile> files = fd.getFiles();
+        files.stream().forEach(voFile -> {
+            File file = new File(voFile.getPath());
+            if (file.exists()) {
+                file.delete();
+            }
+        });
+
+        dataBaseKnihService.clearMetadata(path, name);
+
+        File uuidFile = Paths.get(path, name + ".uuid").toFile();
+        if (uuidFile.exists()) {
+            uuidFile.delete();
         }
     }
 
