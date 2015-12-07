@@ -1,12 +1,10 @@
 package bibliotheca.web;
 
 import bibliotheca.config.ConfigService;
+import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
 import bibliotheca.model.VOUuid;
-import bibliotheca.service.BrowsePageService;
-import bibliotheca.service.EditFilePageService;
-import bibliotheca.service.FileService;
-import bibliotheca.service.UuidService;
+import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +43,12 @@ public class MainControler {
     private FileService fileService;
 
     @Autowired
+    private DataBaseKnihService dataBaseKnihService;
+
+    @Autowired
+    private BookDetailService bookDetailService;
+
+    @Autowired
     private UuidService uuidService;
 
     @RequestMapping("/")
@@ -72,15 +76,24 @@ public class MainControler {
                          @RequestParam(value = "basename", required = false) String basename,
                          final Model model) {
         model.addAllAttributes(browsePageService.getModel(path, booksearch, devicePath, target, tidyup, delete, basename, tryDB));
+//        model.addAttribute("chlist", null);
         return "BrowsePage";
     }
 
     @RequestMapping("/tryDb")
-    public String browse(@RequestParam("id") String id, final Model model) {
+    public String tryDb(@RequestParam("id") String id, final Model model) {
         VOUuid voUuid = uuidService.getByUuid(id);
         model.addAllAttributes(browsePageService.tryDb(voUuid.getPath(), voUuid.getName()));
 //        return "BrowsePage";
         return "BrowsePage :: bookitem";
+    }
+
+    @RequestMapping("/chooseDbModalList")
+    public String chooseDbModalList(@RequestParam("id") String id, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        model.addAttribute("chlist", dataBaseKnihService.getChooseDbModalList(fd.getBookname()));
+        return "BrowsePage :: chooseListItem";
     }
 
     @RequestMapping(value = "/saveDbUrl")

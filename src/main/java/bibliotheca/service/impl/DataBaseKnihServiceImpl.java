@@ -1,5 +1,6 @@
 package bibliotheca.service.impl;
 
+import bibliotheca.model.VOChoose;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.service.DataBaseKnihService;
@@ -171,6 +172,26 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
         elements = getDocument(url).select("h2.jmenaautoru > a[href^=autori]");
         result.addAll(elements.stream().map(Element::text).collect(Collectors.toList()));
         return result;
+    }
+
+    @Override
+    public List<VOChoose> getChooseDbModalList(String bookname) {
+        try {
+            Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").timeout(CONNECT_TIMEOUT_MILLIS).get();
+
+            Elements elements = doc.select("#left_less > p.new_search");
+//            elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong");
+            return elements.stream()
+                    .map(element -> new VOChoose(
+                            element.select("img").attr("src"),
+                            "http://www.databazeknih.cz/" + element.select("a.search_to_stats").attr("href"),
+                            element.select("a.search_to_stats").text(),
+                            element.select(".smallfind").text()))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();  // TODO Lebeda - implementova
+        }
+        return null;
     }
 
     @Override

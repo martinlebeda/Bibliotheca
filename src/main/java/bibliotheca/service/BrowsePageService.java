@@ -23,4 +23,5 @@ public interface BrowsePageService {
 
     // TODO - JavaDoc - Lebeda
     Map<String, Object> loadItemModel(String path, String name);
+
 }

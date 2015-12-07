@@ -1,5 +1,6 @@
 package bibliotheca.service;
 
+import bibliotheca.model.VOChoose;
 import bibliotheca.model.VOFileDetail;
 import org.jsoup.nodes.Document;
 
@@ -82,4 +83,7 @@ public interface DataBaseKnihService {
 
     // TODO - JavaDoc - Lebeda
     List<String> getAuthors(String url);
+
+    // TODO - JavaDoc - Lebeda
+    List<VOChoose> getChooseDbModalList(String bookname);
 }

@@ -255,7 +255,21 @@
         <h4 class="modal-title">Choose from database</h4>
       </div>
       <div class="modal-body">
-        <p>One fine body&hellip;</p>
+          <div id="chooseDbModalList">
+              <th:block th:unless="${#lists.isEmpty(chlist)}" th:fragment="chooseListItem">
+                  <div th:each="l : ${chlist}" class="row chooseListItem" th:onclick="'javascript:saveDbUrl(\'' + ${l.url} + '\');'">
+                      <div class="col-xs-2">
+                          <img th:src="${l.urlimg}"
+                               src="http://pingendo.github.io/pingendo-bootstrap/assets/placeholder.png"
+                               class="img-responsive"/>
+                      </div>
+                      <div class="col-xs-10">
+                        <div class="row"><a th:href="${l.url}" href="#" th:text="${l.title}">title</a></div>
+                        <div class="row" th:text="${l.other}">2005, author</div>
+                      </div>
+                  </div>
+              </th:block>
+          </div>
           <hr/>
           <form class="form-inline" id="chooseDbModalInlineForm">
             <div class="form-group">
@@ -270,7 +284,6 @@
       </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <!--<button type="button" class="btn btn-primary">Save changes</button>-->
         </div>
     </div>
   </div>
