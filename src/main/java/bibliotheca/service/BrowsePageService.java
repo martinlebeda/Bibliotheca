@@ -19,5 +19,8 @@ public interface BrowsePageService {
                                             final String basename, String tryDB);
 
     // TODO - JavaDoc - Lebeda
-    Map<String, ?> tryDb(String uuid);
+    Map<String, ?> tryDb(String path, String name);
+
+    // TODO - JavaDoc - Lebeda
+    Map<String, Object> loadItemModel(String path, String name);
 }

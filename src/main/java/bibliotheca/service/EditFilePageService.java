@@ -15,4 +15,7 @@ public interface EditFilePageService {
     @Deprecated
     Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
                                  String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih);
+
+    // TODO - JavaDoc - Lebeda
+    void saveDbUrl(String path, String name, String url);
 }

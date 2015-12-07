@@ -210,8 +210,12 @@
                                     <li><a class="file-external_search" href="https://www.google.cz/search?q=${p.name}"
                                            target="_blank">Google</a></li>
                                     <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
+                                                                            onclick="chooseDb('123', 'title', 'author');"
+                                                                            th:onclick="'javascript:chooseDb(\'' + ${p.uuid} + '\', \'' + ${p.bookname} + '\', \'' + ${p.bookauthor} + '\');'">
+                                                                            DatabázeKnih</a> </li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
                                                                             th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}"
-                                                                            target="_blank">DatabázeKnih</a></li>
+                                                                            target="_blank">DatabázeKnih - title</a></li>
                                     <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
                                                                             th:href="@{|http://www.databazeknih.cz/search?q=${p.bookauthor}&amp;in=authors|}"
                                                                             target="_blank">DatabázeKnih - authors</a></li>
@@ -243,43 +247,52 @@
     </div>
 </div>
 
-<!--&lt;!&ndash; modal dialog &ndash;&gt;-->
-<!--<div class="modal fade" id="myModal">-->
-<!--<div class="modal-dialog">-->
-<!--<div class="modal-content">-->
-<!--<div class="modal-header">-->
-<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
-<!--<h4 class="modal-title">Modal title</h4>-->
-<!--</div>-->
-<!--<div class="modal-body">-->
-<!--<p>One fine body&hellip;</p>-->
-<!--<button class="btn btn-default" data-toggle="modal" data-target="#myModal2"><i class="fa fa-windows"></i> Window</button>-->
-<!--</div>-->
-<!--<div class="modal-footer">-->
-<!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-<!--<button type="button" class="btn btn-primary">Save changes</button>-->
-<!--</div>-->
-<!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
-<!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
-<!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
+<div class="modal fade" id="chooseDbModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Choose from database</h4>
+      </div>
+      <div class="modal-body">
+        <p>One fine body&hellip;</p>
+          <hr/>
+          <form class="form-inline" id="chooseDbModalInlineForm">
+            <div class="form-group">
+              <label class="chooseDbModalInlineFormItem" for="chooseDbModalUrl">URL:</label>
+              <input type="text" class="form-control" id="chooseDbModalUrl" placeholder="url from Databazeknih.cz"/>
+            </div>
+            <input type="hidden" id="chooseDbModalIdBook" name="chooseDbModalUrl" value="chooseDbModalUrl"/>
+            <button type="button" class="btn btn-default chooseDbModalInlineFormItem" onclick="saveDbUrl();">Save</button>
+          </form>
+          <a class="" id="chooseDbModalTitleUrl" href="#" target="_blank">DatabázeKnih - title</a>
+          <a class="" id="chooseDbModalAuthorUrl" href="#" target="_blank">DatabázeKnih - authors</a>
+      </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+        </div>
+    </div>
+  </div>
+</div>
 
-<!--<div class="modal fade" id="myModal2">-->
-<!--<div class="modal-dialog">-->
-<!--<div class="modal-content">-->
-<!--<div class="modal-header">-->
-<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
-<!--<h4 class="modal-title">Modal title</h4>-->
-<!--</div>-->
-<!--<div class="modal-body">-->
-<!--<p>One fine body&hellip;</p>-->
-<!--<button class="btn btn-default" data-toggle="modal" data-target="#myModal2"><i class="fa fa-windows"></i> Window</button>-->
-<!--</div>-->
-<!--<div class="modal-footer">-->
-<!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-<!--<button type="button" class="btn btn-primary">Save changes</button>-->
-<!--</div>-->
-<!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
-<!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
+<!--dialog - sablona-->
+<!--<div class="modal fade" tabindex="-1" role="dialog">-->
+  <!--<div class="modal-dialog">-->
+    <!--<div class="modal-content">-->
+      <!--<div class="modal-header">-->
+        <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+        <!--<h4 class="modal-title">Modal title</h4>-->
+      <!--</div>-->
+      <!--<div class="modal-body">-->
+        <!--<p>One fine body&hellip;</p>-->
+      <!--</div>-->
+      <!--<div class="modal-footer">-->
+        <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+        <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+      <!--</div>-->
+    <!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
+  <!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
 <!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
 
 </body>

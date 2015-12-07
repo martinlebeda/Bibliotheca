@@ -2,9 +2,11 @@ package bibliotheca.web;
 
 import bibliotheca.config.ConfigService;
 import bibliotheca.model.VOPath;
+import bibliotheca.model.VOUuid;
 import bibliotheca.service.BrowsePageService;
 import bibliotheca.service.EditFilePageService;
 import bibliotheca.service.FileService;
+import bibliotheca.service.UuidService;
 import bibliotheca.tools.Tools;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +44,9 @@ public class MainControler {
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private UuidService uuidService;
+
     @RequestMapping("/")
     public String root(final Model model) {
 
@@ -72,8 +77,19 @@ public class MainControler {
 
     @RequestMapping("/tryDb")
     public String browse(@RequestParam("id") String id, final Model model) {
-        model.addAllAttributes(browsePageService.tryDb(id));
+        VOUuid voUuid = uuidService.getByUuid(id);
+        model.addAllAttributes(browsePageService.tryDb(voUuid.getPath(), voUuid.getName()));
 //        return "BrowsePage";
+        return "BrowsePage :: bookitem";
+    }
+
+    @RequestMapping(value = "/saveDbUrl")
+    public String saveDbUrl(@RequestParam("id") String id, @RequestParam("url") String url, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+
+        editFilePageService.saveDbUrl(voUuid.getPath(), voUuid.getName(), url);
+
+        model.addAllAttributes(browsePageService.loadItemModel(voUuid.getPath(), voUuid.getName()));
         return "BrowsePage :: bookitem";
     }
 

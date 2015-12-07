@@ -100,13 +100,17 @@ public class BookDetailServiceImpl implements BookDetailService {
             }
         }
 
-        final String desc = getDesc(voFileList);
-
-        final VOFileDetail fileDetail = new VOFileDetail(uuid, key, cover, desc, path,
+        final VOFileDetail fileDetail = new VOFileDetail(uuid, key, cover, getDesc(voFileList), path,
                 Tools.getStringStringMap(path, FilenameUtils.getBaseName(voFileList.get(0).getName())));
 
         //noinspection unchecked
         if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())) {
+            if (StringUtils.isBlank(fileDetail.getDesc())) {
+                String description = dataBaseKnihService.getDBKnihDescription(fileDetail.getDbknihUrl());
+                Tools.writeDescription(fileDetail.getPath(), fileDetail.getName(), description);
+                fileDetail.setDesc(description);
+            }
+
             if (StringUtils.isBlank(fileDetail.getNazevMeta())) {
                 fileDetail.setNazev(dataBaseKnihService.getNazev(fileDetail.getDbknihUrl()));
                 fileDetail.setSerie(dataBaseKnihService.getSerie(fileDetail.getDbknihUrl()));

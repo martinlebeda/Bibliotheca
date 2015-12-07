@@ -4,7 +4,6 @@ import bibliotheca.config.ConfigService;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
-import bibliotheca.model.VOUuid;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -203,12 +202,8 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     }
 
     @Override
-    public Map<String, Object> tryDb(String uuid) {
+    public Map<String, Object> tryDb(String path, String name) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
-
-        VOUuid voUuid = uuidService.getByUuid(uuid);
-        String path = voUuid.getPath();
-        String name = voUuid.getName();
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());
@@ -224,6 +219,24 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 //        List<VOFileDetail> fileDetails = new ArrayList<>();
 //        fileDetails.add(fd);
 //        model.put("fileDetails", fileDetails);
+        model.put("p", fd);
+
+        return model;
+    }
+
+    @Override
+    public Map<String, Object> loadItemModel(String path, String name) {
+        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction");
+
+        File file = new File(path);
+        model.put(Tools.PARAM_PATH, file.getAbsolutePath());
+        try {
+            model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+
+        VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
         model.put("p", fd);
 
         return model;

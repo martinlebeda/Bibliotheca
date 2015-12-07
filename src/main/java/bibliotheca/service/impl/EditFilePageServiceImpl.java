@@ -138,6 +138,19 @@ public class EditFilePageServiceImpl implements EditFilePageService {
         return model;
     }
 
+    @Override
+    public void saveDbUrl(String path, String name, String url) {
+        // read metadata
+        Map<String, Object> metadata = Tools.getStringStringMap(path, name);
+
+        // set matadata
+        if (StringUtils.isNotBlank(url) && !url.equals(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
+            metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, url);
+
+            Tools.writeMetaData(path, name, metadata);
+        }
+    }
+
     private String getRawDesc(final List<VOFile> files) {
         VOFile readme = fileService.getTypeFile(files, "mkd", false);
         final String html;
