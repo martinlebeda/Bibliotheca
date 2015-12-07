@@ -212,6 +212,9 @@
                                     <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
                                                                             th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}"
                                                                             target="_blank">DatabázeKnih</a></li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a class="file-external_search"
+                                                                            th:href="@{|http://www.databazeknih.cz/search?q=${p.bookauthor}&amp;in=authors|}"
+                                                                            target="_blank">DatabázeKnih - authors</a></li>
                                     <li role="presentation" class="divider"></li>
                                     <li><a class="file-external_search"
                                            th:href="|view${path}/${p.name}.htmlz/pack/index.html|"
