@@ -6,7 +6,6 @@ import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -17,11 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,8 +47,8 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
     @Override
     public Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
-                                        final String target, final String tidyup, final String delete,
-                                        final String basename, String tryDB) {
+                                        final String target,
+                                        final String basename) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
         File file = new File(path);
@@ -60,24 +57,6 @@ public class BrowsePageServiceImpl implements BrowsePageService {
             model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
-        }
-
-        // try DB action
-        if (StringUtils.isNoneBlank(tryDB)) {
-            VOFileDetail fd = bookDetailService.getVoFileDetail(path, tryDB);
-            dataBaseKnihService.tryDb(fd);
-        }
-
-        // tidyup some file
-        if (StringUtils.isNoneBlank(tidyup)) {
-            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(tidyup));
-            Arrays.stream(listFiles).forEach(this::tidyUp);
-        }
-
-        // delete files
-        if (StringUtils.isNoneBlank(delete)) {
-            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(delete));
-            Arrays.stream(listFiles).forEach(File::delete);
         }
 
         // generate
@@ -149,8 +128,11 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         HashMap<String, List<VOFile>> fileMap = new HashMap<>();
         fileList.parallelStream()
                 .filter(voPath -> !(
-                        voPath.getPath().toLowerCase().endsWith("mht")
-                                || voPath.getPath().toLowerCase().endsWith("mhtml")))
+                                voPath.getPath().toLowerCase().endsWith("mht")
+                                        || voPath.getPath().toLowerCase().endsWith("mhtml")
+                                        || voPath.getName().contains(".bak2")
+                        )
+                )
                 .forEachOrdered(voPath -> {
                     String basenamePath = FilenameUtils.getBaseName(voPath.getName());
                     if (!fileMap.containsKey(basenamePath)) {
@@ -201,6 +183,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         return model;
     }
 
+
     @Override
     public Map<String, Object> tryDb(String path, String name) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
@@ -241,37 +224,5 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
         return model;
     }
-
-    // TODO Lebeda - do service
-    private void tidyUp(final File fileUklid) {
-        try {
-            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
-            String author = StringUtils.trim(split[0]);
-            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
-
-            File tgtFile = Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile();
-
-            if (tgtFile.exists()) {
-                String sha1Src = DigestUtils.sha1Hex(new FileInputStream(fileUklid));
-                String sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile));
-
-                if (!sha1Src.equals(sha1Tgt)) {
-                    FileUtils.moveFile(fileUklid, Paths.get(
-                            tgtFile.getParent(),
-                            FilenameUtils.getBaseName(fileUklid.getName()),
-                            sha1Src,
-                            FilenameUtils.getExtension(fileUklid.getName())).toFile());
-                } else {
-                    //noinspection ResultOfMethodCallIgnored
-                    tgtFile.delete();
-                }
-            } else {
-                FileUtils.moveToDirectory(fileUklid, tgt, true);
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
 
 }

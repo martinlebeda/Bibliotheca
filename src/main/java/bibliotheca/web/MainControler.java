@@ -70,12 +70,9 @@ public class MainControler {
                          @RequestParam(value = "booksearch", required = false) String booksearch,
                          @RequestParam(value = "devicePath", required = false) String devicePath,
                          @RequestParam(value = "target", required = false) String target,
-                         @RequestParam(value = "tidyup", required = false) String tidyup,
-                         @RequestParam(value = "tryDB", required = false) String tryDB,
-                         @RequestParam(value = "delete", required = false) String delete,
                          @RequestParam(value = "basename", required = false) String basename,
                          final Model model) {
-        model.addAllAttributes(browsePageService.getModel(path, booksearch, devicePath, target, tidyup, delete, basename, tryDB));
+        model.addAllAttributes(browsePageService.getModel(path, booksearch, devicePath, target, basename));
 //        model.addAttribute("chlist", null);
         return "BrowsePage";
     }

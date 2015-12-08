@@ -171,18 +171,18 @@
                             <a class="file-extension spaceAround" th:each="f : ${p.files}"
                                th:href="|download?path=${f.path}|" th:text="${#strings.toLowerCase(f.ext)}">epub</a>
 
-                            <div class="dropdown dropup spaceAround">
+                            <div class="dropdown spaceAround">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
                                     <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                                 <ul class="dropdown-menu">
+                                    <li><a
+                                           th:href="|view${encodedPath}/${p.encodedName}.htmlz/pack/index.html|"
+                                           target="_blank">View</a></li>
+                                    <li role="presentation" class="divider"></li>
                                     <li th:each="t : ${p.targets}"><a class="file-target"
                                                                       th:href="|browse?path=${path}&amp;basename=${p.bookFileName}&amp;target=${t}|"
                                                                       th:text="${#strings.toLowerCase(t)}">mobi</a>
                                     </li>
-                                    <li role="presentation" class="divider"></li>
-                                    <li><a
-                                           th:href="|view${encodedPath}/${p.encodedName}.htmlz/pack/index.html|"
-                                           target="_blank">View</a></li>
                                 </ul>
                             </div>
 
@@ -201,7 +201,7 @@
                             <a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"
                                onclick="tryDb('123')" th:onclick="'javascript:tryDb(\'' + ${p.uuid} + '\');'">TryDB</a>
 
-                            <div class="dropdown dropup pull-right spaceAround">
+                            <div class="dropdown pull-right spaceAround">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
                                     <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                                 <ul class="dropdown-menu">
@@ -213,26 +213,21 @@
                                         DatabázeKnih</a></li>
                                     <li th:if="${p.dbknihUrlExists}"><a th:onclick="'javascript:downloadCover(\'' + ${p.uuid} + '\');'">Refresh cover</a></li>
                                     <li th:if="${p.dbknihUrlExists}"><a th:onclick="'javascript:clearMetadata(\'' + ${p.uuid} + '\');'">Clear metadata</a></li>
-                                    <li th:unless="${p.dbknihUrlExists}"><a
-                                                                            th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}"
-                                                                            target="_blank">DatabázeKnih - title</a>
-                                    </li>
-                                    <li th:unless="${p.dbknihUrlExists}"><a
-                                                                            th:href="@{|http://www.databazeknih.cz/search?q=${p.bookauthor}&amp;in=authors|}"
-                                                                            target="_blank">DatabázeKnih - authors</a>
-                                    </li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}" target="_blank">DatabázeKnih - title</a> </li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a th:href="@{|http://www.databazeknih.cz/search?q=${p.bookauthor}&amp;in=authors|}" target="_blank">DatabázeKnih - authors</a> </li>
+                                    <li role="presentation" class="divider"></li>
+                                    <li><a th:href="@{|http://xtrance.info/new/?mainpage=pub&amp;subpage=&amp;pub_filter=f:${p.bookname}|}" target="_blank">xTrance - title</a> </li>
+                                    <li th:unless="${#strings.isEmpty(p.serie)}"><a th:href="@{|http://xtrance.info/new/?mainpage=pub&amp;subpage=&amp;ser_filter=f:${p.serie}|}" target="_blank">xTrance - Serie</a> </li>
+                                    <li><a th:href="@{|http://xtrance.info/new/?mainpage=aut&amp;subpage=&amp;aut_filter=f:${p.bookauthor}|}" target="_blank">xTrance - authors</a> </li>
                                     <li role="presentation" class="divider"></li>
                                     <li><a
                                            th:href="|view${path}/${p.bookFileName}.htmlz/pack/index.html|"
                                            target="_blank">View</a></li>
                                     <li><a
                                            th:href="|editFile?path=${path}&amp;basename=${p.bookFileName}|">Edit</a></li>
-                                    <li th:each="d : ${p.devices}"><a
-                                                                      th:href="|browse?path=${path}&amp;basename=${p.bookFileName}&amp;target=${d.format}&amp;devicePath=${d.path}|"
+                                    <li th:each="d : ${p.devices}"><a th:href="|browse?path=${path}&amp;basename=${p.bookFileName}&amp;target=${d.format}&amp;devicePath=${d.path}|"
                                                                       th:text="${d.name}">PocketBook</a></li>
-
-                                    <li><a th:if="${p.tidyUp}"
-                                           th:href="|browse?path=${path}&amp;tidyup=${p.bookFileName}|"
+                                    <li th:if="${p.tidyUp}"><a th:onclick="'javascript:tidyupBook(\'' + ${p.uuid} + '\');'"
                                            th:text="|Move to &quot;${p.bookauthor}&quot;|">Move to ...</a></li>
                                     <li role="presentation" class="divider"></li>
                                     <li><a th:onclick="'javascript:deleteBook(\'' + ${p.uuid} + '\');'">Delete</a> </li>

@@ -1,7 +1,7 @@
 // try automatic find url and load changes if founded successfully
 function tryDb(id) {
     //alert(id);
-    $('#'+id).load("/tryDb?id=" + id);
+    $('#' + id).load("/tryDb?id=" + id);
 }
 
 // fill and show modal for manipulace with url
@@ -39,7 +39,14 @@ function clearMetadata(id) {
 
 // delete book
 function deleteBook(id) {
-    $.get( "/deleteBook", {'id': id}, function( data ) {
+    $.get("/deleteBook", {'id': id}, function (data) {
+        $('#' + id).remove();
+    });
+}
+
+// tidyUp
+function tidyupBook(id) {
+    $.get("/tidyupBook", {'id': id}, function (data) {
         $('#' + id).remove();
     });
 }
@@ -48,6 +55,28 @@ function deleteBook(id) {
 function reloadImageById(id) {
     $('#' + id + ' > div.col-xs-2 > img').attr('src', $('img').attr('src') + '?' + Math.random());
 }
+
+$('.dropdown').on('show.bs.dropdown', function () {
+    alert('The dropdown is about to be shown.');
+});
+
+//function checkMenuPosition(element) {
+//    var menu = $(element).find("ul");
+//    var top = menu.offset().top;
+//    //alert(top);
+//    if (top < 0) {
+//        //$(menu).offset({top: 0, left: menu.offset().left});
+//        $(menu).css('position', 'static');
+//
+//        //$(menu).style.display='';
+//        //$(menu).position({top: 0, left: menu.offset().left});
+//        //$(element).dropdown("toggle");
+//       //$(element)
+//       //    .removeClass('dropup')
+//       //    .addClass('dropdown');
+//       //$(element).dropdown();
+//    }
+//}
 
 //$('#myModal').modal('toggle');
 //$('#myModal').modal('show');

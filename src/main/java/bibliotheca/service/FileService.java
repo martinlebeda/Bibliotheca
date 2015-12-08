@@ -59,4 +59,7 @@ public interface FileService {
      */
     @Deprecated
     File[] refreshFiles(final String basename, final File file, List<VOFile> voFileList);
+
+    // TODO - JavaDoc - Lebeda
+    public void tidyUp(final File fileUklid);
 }

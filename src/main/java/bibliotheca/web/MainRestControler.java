@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -140,6 +141,23 @@ public class MainRestControler {
         }
 
         uuidService.removeFromCache(id);
+    }
+
+    // TODO - JavaDoc - Lebeda
+    @RequestMapping("/tidyupBook")
+    public void tidyupBook(@RequestParam("id") String id) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        String path = voUuid.getPath();
+        String name = voUuid.getName();
+
+//        VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
+//        List<VOFile> files = fd.getFiles();
+
+        final File[] listFiles = new File(path).listFiles((dir, jm) -> jm.startsWith(name));
+        Arrays.stream(listFiles).forEach(fileService::tidyUp);
+
+        // TODO Lebeda -
+//        uuidService.removeFromCache(id);
     }
 
 }

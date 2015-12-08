@@ -15,8 +15,8 @@ public interface BrowsePageService {
      */
     @Deprecated
     Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
-                                            final String target, final String tidyup, final String delete,
-                                            final String basename, String tryDB);
+                                 final String target,
+                                 final String basename);
 
     /**
      * Try automatic fetch metadata from databaze knih.

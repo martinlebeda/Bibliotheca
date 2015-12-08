@@ -3,9 +3,12 @@ package bibliotheca.service.impl;
 import bibliotheca.config.ConfigService;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOPath;
+import bibliotheca.service.BookDetailService;
 import bibliotheca.service.FileService;
 import bibliotheca.tools.Tools;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,8 +20,12 @@ import org.springframework.stereotype.Service;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -43,6 +50,9 @@ public class FileServiceImpl implements FileService {
 
     @Autowired
     private ConfigService configService;
+
+    @Autowired
+    private BookDetailService bookDetailService;
 
     @Override
     public void fillNavigatorData(final HashMap<String, Object> model,
@@ -379,6 +389,45 @@ public class FileServiceImpl implements FileService {
             System.out.println(e.getMessage());
         }
         return result;
+    }
+
+    @Override
+    public void tidyUp(final File fileUklid) {
+        try {
+            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
+            String author = StringUtils.trim(split[0]);
+            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
+
+            File tgtFile = Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile();
+
+            if (tgtFile.exists()) {
+                String sha1Src = DigestUtils.sha1Hex(new FileInputStream(fileUklid));
+                String sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile));
+
+                if ((sha1Src.equals(sha1Tgt)
+                        || fileUklid.getName().endsWith("uuid"))
+                        || fileUklid.getName().endsWith("yaml")
+                        || fileUklid.getName().endsWith("mkd")
+                        || fileUklid.getName().endsWith("jpg")
+                        || fileUklid.getName().endsWith("yaml")
+                        ) {
+                    //noinspection ResultOfMethodCallIgnored
+                    fileUklid.delete();
+                } else {
+                    String pattern = "yyyyMMdd";
+                    SimpleDateFormat format = new SimpleDateFormat(pattern);
+                    String newFileName = FilenameUtils.getBaseName(fileUklid.getName()) + ".bak"
+                            + format.format(new Date(fileUklid.lastModified()))
+                            + "." + FilenameUtils.getExtension(fileUklid.getName());
+                    Path tgtFileNahr = Paths.get(tgtFile.getParent(), newFileName);
+                    FileUtils.moveFile(fileUklid, tgtFileNahr.toFile());
+                }
+            } else {
+                FileUtils.moveToDirectory(fileUklid, tgt, true);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 }
