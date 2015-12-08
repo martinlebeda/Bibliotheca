@@ -34,7 +34,7 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
 
     @Override
     public void loadFromDBKnih(@NotNull VOFileDetail fileDetail, boolean force) {
-        fileDetail.setNazev(getNazev(fileDetail.getDbknihUrl()));
+        fileDetail.setTitle(getTitle(fileDetail.getDbknihUrl()));
         fileDetail.setSerie(getSerie(fileDetail.getDbknihUrl()));
         fileDetail.replaceAuthors(getAuthors(fileDetail.getDbknihUrl()));
         fileDetail.setHodnoceniDbPocet(getHodnoceniDbPocet(fileDetail.getDbknihUrl()));
@@ -45,12 +45,12 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
 
         String description = getDBKnihDescription(fileDetail.getDbknihUrl());
         if ((StringUtils.isNotBlank(description) && StringUtils.isBlank(fileDetail.getDesc())) || force) {
-            Tools.writeDescription(fileDetail.getPath(), fileDetail.getName(), description);
+            Tools.writeDescription(fileDetail.getPath(), fileDetail.getBookFileName(), description);
             fileDetail.setDesc(description);
         }
 
         if (fileDetail.isDirty()) {
-            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getName(), fileDetail.getMetadata());
+            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getBookFileName(), fileDetail.getMetadata());
         }
     }
 
@@ -66,7 +66,7 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
             }
 
             if (StringUtils.isNoneBlank(frmCover)) {
-                String baseFileName = Paths.get(new File(fileDetail.getPath()).getAbsolutePath(), fileDetail.getName()).toString();
+                String baseFileName = Paths.get(new File(fileDetail.getPath()).getAbsolutePath(), fileDetail.getBookFileName()).toString();
                 VOFile coverDb = Tools.downloadCover(baseFileName, frmCover);
                 fileDetail.setCover(coverDb.getPath());
             }
@@ -124,10 +124,10 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
             String description = getDBKnihDescription(dbKnihUrl);
             loadFromDBKnih(fileDetail);
 
-            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getName(), fileDetail.getMetadata());
+            Tools.writeMetaData(fileDetail.getPath(), fileDetail.getBookFileName(), fileDetail.getMetadata());
 
             if (StringUtils.isNotBlank(description) && StringUtils.isBlank(fileDetail.getDesc())) {
-                Tools.writeDescription(fileDetail.getPath(), fileDetail.getName(), description);
+                Tools.writeDescription(fileDetail.getPath(), fileDetail.getBookFileName(), description);
                 fileDetail.setDesc(description);
             }
         }
@@ -182,7 +182,7 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
     }
 
     @Override
-    public String getNazev(String url) {
+    public String getTitle(String url) {
         String result = "";
         Elements elements;
         elements = getDocument(url).select("h1[itemprop=name]");
@@ -228,9 +228,8 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
                             element.select(".smallfind").text()))
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            e.printStackTrace();  // TODO Lebeda - implementova
+            throw new IllegalStateException(e);
         }
-        return null;
     }
 
     @Override

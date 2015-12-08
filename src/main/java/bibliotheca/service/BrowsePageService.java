@@ -18,10 +18,23 @@ public interface BrowsePageService {
                                             final String target, final String tidyup, final String delete,
                                             final String basename, String tryDB);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Try automatic fetch metadata from databaze knih.
+     *
+     * @param path path to store directory
+     * @param name name of book file without suffix
+     * @return part of model for page render
+     */
+    // TODO Lebeda - přesun
     Map<String, ?> tryDb(String path, String name);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Load model for one book item.
+     *
+     * @param path path to store directory
+     * @param name name of book file without suffix
+     * @return part of model for page render
+     */
     Map<String, Object> loadItemModel(String path, String name);
 
 }

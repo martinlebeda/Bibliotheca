@@ -181,8 +181,8 @@ public class BrowsePageServiceImpl implements BrowsePageService {
                 fileDetails.sort((o1, o2) -> new CompareToBuilder()
                         .append(o1.getBookauthor(), o2.getBookauthor())
                         .append(o1.getSerie(), o2.getSerie())
-                        .append(o1.getNazev(), o2.getNazev())
-                        .append(o1.getName(), o2.getName())
+                        .append(o1.getTitle(), o2.getTitle())
+                        .append(o1.getBookFileName(), o2.getBookFileName())
                         .toComparison());
             } catch (NullPointerException e) {
                 System.out.println("nic");

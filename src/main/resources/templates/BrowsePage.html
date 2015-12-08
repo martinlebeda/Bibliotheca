@@ -152,7 +152,7 @@
                 <div class="col-xs-10">
                     <div class="row">
 
-                        <h1 th:text="${p.nazev}">Title</h1>
+                        <h1 th:text="${p.title}">Title</h1>
                         <h5 th:text="${p.serie}">A serie</h5>
                         <h4 th:text="${p.autor}">Author</h4>
 
@@ -176,7 +176,7 @@
                                     <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                                 <ul class="dropdown-menu">
                                     <li th:each="t : ${p.targets}"><a class="file-target"
-                                                                      th:href="|browse?path=${path}&amp;basename=${p.name}&amp;target=${t}|"
+                                                                      th:href="|browse?path=${path}&amp;basename=${p.bookFileName}&amp;target=${t}|"
                                                                       th:text="${#strings.toLowerCase(t)}">mobi</a>
                                     </li>
                                     <li role="presentation" class="divider"></li>
@@ -197,7 +197,7 @@
                                th:text="|${#strings.defaultString(p.hodnoceniDbProcento,'&minus; ')}&percnt; (${#strings.defaultString(p.hodnoceniDbPocet,0)}) DatabázeKnih.cz|"
                                target="_blank">DatabázeKnih.cz</a>
                             <!--<a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"-->
-                            <!--th:href="|browse?path=${path}&amp;tryDB=${p.name}|">TryDB</a>-->
+                            <!--th:href="|browse?path=${path}&amp;tryDB=${p.bookFileName}|">TryDB</a>-->
                             <a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"
                                onclick="tryDb('123')" th:onclick="'javascript:tryDb(\'' + ${p.uuid} + '\');'">TryDB</a>
 
@@ -205,7 +205,7 @@
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
                                     <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="https://www.google.cz/search?q=${p.name}"
+                                    <li><a href="https://www.google.cz/search?q=${p.bookFileName}"
                                            target="_blank">Google</a></li>
                                     <li><a
                                            onclick="chooseDb('123', 'title', 'author');"
@@ -223,16 +223,16 @@
                                     </li>
                                     <li role="presentation" class="divider"></li>
                                     <li><a
-                                           th:href="|view${path}/${p.name}.htmlz/pack/index.html|"
+                                           th:href="|view${path}/${p.bookFileName}.htmlz/pack/index.html|"
                                            target="_blank">View</a></li>
                                     <li><a
-                                           th:href="|editFile?path=${path}&amp;basename=${p.name}|">Edit</a></li>
+                                           th:href="|editFile?path=${path}&amp;basename=${p.bookFileName}|">Edit</a></li>
                                     <li th:each="d : ${p.devices}"><a
-                                                                      th:href="|browse?path=${path}&amp;basename=${p.name}&amp;target=${d.format}&amp;devicePath=${d.path}|"
+                                                                      th:href="|browse?path=${path}&amp;basename=${p.bookFileName}&amp;target=${d.format}&amp;devicePath=${d.path}|"
                                                                       th:text="${d.name}">PocketBook</a></li>
 
                                     <li><a th:if="${p.tidyUp}"
-                                           th:href="|browse?path=${path}&amp;tidyup=${p.name}|"
+                                           th:href="|browse?path=${path}&amp;tidyup=${p.bookFileName}|"
                                            th:text="|Move to &quot;${p.bookauthor}&quot;|">Move to ...</a></li>
                                     <li role="presentation" class="divider"></li>
                                     <li><a th:onclick="'javascript:deleteBook(\'' + ${p.uuid} + '\');'">Delete</a> </li>

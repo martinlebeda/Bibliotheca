@@ -17,7 +17,7 @@ import java.util.*;
  *         Date: 16.12.14
  */
 public class VOFileDetail {
-    private final String name; // TODO Lebeda - rename to bookFileName
+    private final String bookFileName;
     private String cover;
     private String dbknihUrl;
     private final List<VOFile> files = new ArrayList<>();
@@ -30,7 +30,7 @@ public class VOFileDetail {
     private String targetPath = "";
     private String author;
 
-    private String nazev;
+    private String title;
     private final List<String> authors = new ArrayList<>();
     private String serie;
 
@@ -41,16 +41,16 @@ public class VOFileDetail {
     private String uuid;
     private boolean dirty = false;
 
-    public VOFileDetail(final String uuid, final String name, final String cover, final String desc, String path, Map<String, Object> metadata) {
+    public VOFileDetail(final String uuid, final String bookFileName, final String cover, final String desc, String path, Map<String, Object> metadata) {
         this.uuid = uuid;
 
         this.desc = desc;
         this.path = path;
         this.cover = StringUtils.defaultString(cover);
-        this.name = StringUtils.defaultString(name);
+        this.bookFileName = StringUtils.defaultString(bookFileName);
 
         this.dbknihUrl = (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ);
-        this.nazev = (String) metadata.get(Tools.METADATA_KEY_NAZEV);
+        this.title = (String) metadata.get(Tools.METADATA_KEY_NAZEV);
         this.serie = (String) metadata.get(Tools.METADATA_KEY_SERIE);
         this.hodnoceniDbProcento = (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_PROCENTO);
         this.hodnoceniDbPocet = (String) metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_POCET);
@@ -67,7 +67,7 @@ public class VOFileDetail {
         Map<String, Object> meta = new HashMap<>();
 
         meta.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, this.dbknihUrl);
-        meta.put(Tools.METADATA_KEY_NAZEV, this.nazev);
+        meta.put(Tools.METADATA_KEY_NAZEV, this.title);
         meta.put(Tools.METADATA_KEY_SERIE, this.serie);
         meta.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_POCET, this.hodnoceniDbPocet);
         meta.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_PROCENTO, this.hodnoceniDbProcento);
@@ -89,7 +89,7 @@ public class VOFileDetail {
 
     public String getEncodedName() {
         try {
-            return URLEncoder.encode(getName(), "UTF-8");
+            return URLEncoder.encode(getBookFileName(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
@@ -126,8 +126,8 @@ public class VOFileDetail {
         return files;
     }
 
-    public String getName() {
-        return name;
+    public String getBookFileName() {
+        return bookFileName;
     }
 
     public void setTidyUp(final boolean tidyUp) {
@@ -167,11 +167,11 @@ public class VOFileDetail {
     }
 
     public String getBookname() {
-        return StringUtils.replacePattern(name, ".*- *", "");
+        return StringUtils.replacePattern(bookFileName, ".*- *", "");
     }
 
     public String getBookserie() {
-        String[] split = StringUtils.split(name, "-", 3);
+        String[] split = StringUtils.split(bookFileName, "-", 3);
         if (split.length == 3) {
             return StringUtils.trim(split[1]);
         }
@@ -179,7 +179,7 @@ public class VOFileDetail {
     }
 
     public String getBookauthor() {
-        String[] split = StringUtils.split(name, "-", 2);
+        String[] split = StringUtils.split(bookFileName, "-", 2);
         return StringUtils.trim(split[0]);
     }
 
@@ -187,7 +187,7 @@ public class VOFileDetail {
      * @return clear value from metadata
      */
     public String getNazevMeta() {
-        return nazev;
+        return title;
     }
 
     /**
@@ -200,8 +200,8 @@ public class VOFileDetail {
     /**
      * @return compatible value from metadata or filename
      */
-    public String getNazev() {
-        return (StringUtils.isBlank(nazev) ? getBookname() : nazev);
+    public String getTitle() {
+        return (StringUtils.isBlank(title) ? getBookname() : title);
     }
 
     /**
@@ -219,9 +219,9 @@ public class VOFileDetail {
         }
     }
 
-    public void setNazev(String nazev) {
-        if (!StringUtils.equals(this.nazev, nazev)) {
-           this.nazev = nazev;
+    public void setTitle(String title) {
+        if (!StringUtils.equals(this.title, title)) {
+           this.title = title;
            this.dirty = true;
         }
     }

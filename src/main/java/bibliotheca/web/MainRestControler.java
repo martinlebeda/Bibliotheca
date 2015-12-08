@@ -113,7 +113,10 @@ public class MainRestControler {
         }
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * delete all files of book from disk
+     * @param id id of book
+     */
     @RequestMapping("/deleteBook")
     public void deleteBook(@RequestParam("id") String id) {
         VOUuid voUuid = uuidService.getByUuid(id);
@@ -135,6 +138,8 @@ public class MainRestControler {
         if (uuidFile.exists()) {
             uuidFile.delete();
         }
+
+        uuidService.removeFromCache(id);
     }
 
 }

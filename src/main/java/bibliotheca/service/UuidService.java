@@ -20,6 +20,18 @@ public interface UuidService {
      */
     String getUuid(String path, String key);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Find VO by uuid in cache.
+     *
+     * @param uuid uuid of book
+     * @return VO by uuid
+     */
     VOUuid getByUuid(String uuid);
+
+    /**
+     * Remove ID from cache.
+     * ie. if book is deleted or joined to another.
+     * @param id id of book
+     */
+    void removeFromCache(String id);
 }

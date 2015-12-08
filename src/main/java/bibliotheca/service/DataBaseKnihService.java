@@ -84,21 +84,55 @@ public interface DataBaseKnihService {
      */
     String getHodnoceniDbProcento(String url);
 
-    // TODO - JavaDoc - Lebeda
-    String getNazev(String url);
+    /**
+     * Extract metadata from databazeknih.cz.
+     * Url maybe in local cache.
+     *
+     * @param url url to book page in databazeknih.cz
+     * @return metadata
+     */
+    String getTitle(String url);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Extract metadata from databazeknih.cz.
+     * Url maybe in local cache.
+     *
+     * @param url url to book page in databazeknih.cz
+     * @return metadata
+     */
     String getSerie(String url);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Extract metadata from databazeknih.cz.
+     * Url maybe in local cache.
+     *
+     * @param url url to book page in databazeknih.cz
+     * @return metadata
+     */
     List<String> getAuthors(String url);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Choose list for founded books.
+     *
+     * @param bookname book name for find
+     * @return list for founded books
+     */
     List<VOChoose> getChooseDbModalList(String bookname);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Download cover from databaze knih
+     *
+     * @param fileDetail filled detail with url
+     * @param force force redownload if cover exists
+     */
     void downloadCover(@NotNull VOFileDetail fileDetail, boolean force);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Clear metadata of book.
+     * Its delete cover, yaml metadata and description.
+     *
+     * @param path path to store directory
+     * @param key name of book file without suffix
+     */
     void clearMetadata(String path, String key);
 }

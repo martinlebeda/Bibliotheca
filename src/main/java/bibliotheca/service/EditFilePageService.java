@@ -10,12 +10,20 @@ public interface EditFilePageService {
 
     /**
      * Get model for browsePage
+     *
      * @deprecated will be replaced by ajax rutines
      */
     @Deprecated
     Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
                                  String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Store url from databaseknih.cz in yaml file.
+     * <p>
+     *
+     * @param path path to store directory
+     * @param name name of book file without suffix
+     * @param url url from databaseknih.cz
+     */
     void saveDbUrl(String path, String name, String url);
 }

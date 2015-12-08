@@ -52,6 +52,11 @@ public class UuidServiceImpl implements UuidService {
         return indexCache.get(uuid);
     }
 
+    @Override
+    public void removeFromCache(String id) {
+        indexCache.remove(id);
+    }
+
     /**
      * Create new UUID for book and store it to uuid file for next use.
      *

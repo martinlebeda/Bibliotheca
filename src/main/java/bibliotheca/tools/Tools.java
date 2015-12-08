@@ -57,7 +57,11 @@ public class Tools {
         return false;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @param title title of page
+     * @param path path of browse page
+     * @return base of model for render page
+     */
     public static HashMap<String, Object> getDefaultModel(final String title, String path) {
         final HashMap<String, Object> model = new HashMap<>();
         model.put("title", title);

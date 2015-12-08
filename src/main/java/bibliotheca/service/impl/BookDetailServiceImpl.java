@@ -107,12 +107,12 @@ public class BookDetailServiceImpl implements BookDetailService {
         if (StringUtils.isNotBlank(fileDetail.getDbknihUrl())) {
             if (StringUtils.isBlank(fileDetail.getDesc())) {
                 String description = dataBaseKnihService.getDBKnihDescription(fileDetail.getDbknihUrl());
-                Tools.writeDescription(fileDetail.getPath(), fileDetail.getName(), description);
+                Tools.writeDescription(fileDetail.getPath(), fileDetail.getBookFileName(), description);
                 fileDetail.setDesc(description);
             }
 
             if (StringUtils.isBlank(fileDetail.getNazevMeta())) {
-                fileDetail.setNazev(dataBaseKnihService.getNazev(fileDetail.getDbknihUrl()));
+                fileDetail.setTitle(dataBaseKnihService.getTitle(fileDetail.getDbknihUrl()));
                 fileDetail.setSerie(dataBaseKnihService.getSerie(fileDetail.getDbknihUrl()));
             }
 
@@ -137,14 +137,14 @@ public class BookDetailServiceImpl implements BookDetailService {
                 }
 
                 if (StringUtils.isNoneBlank(frmCover)) {
-                    String baseFileName = Paths.get(new File(path).getAbsolutePath(), fileDetail.getName()).toString();
+                    String baseFileName = Paths.get(new File(path).getAbsolutePath(), fileDetail.getBookFileName()).toString();
                     VOFile coverDb = Tools.downloadCover(baseFileName, frmCover);
                     fileDetail.setCover(coverDb.getPath());
                 }
             }
 
             if (fileDetail.isDirty()) {
-                Tools.writeMetaData(path, fileDetail.getName(), fileDetail.getMetadata());
+                Tools.writeMetaData(path, fileDetail.getBookFileName(), fileDetail.getMetadata());
             }
         }
 
