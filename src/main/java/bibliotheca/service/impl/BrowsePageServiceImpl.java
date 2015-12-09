@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -46,9 +45,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     private UuidService uuidService;
 
     @Override
-    public Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
-                                        final String target,
-                                        final String basename) {
+    public Map<String, Object> getModel(String path, final String booksearch,  final String basename) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
         File file = new File(path);
@@ -57,36 +54,6 @@ public class BrowsePageServiceImpl implements BrowsePageService {
             model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
-        }
-
-        // generate
-        if (StringUtils.isNotBlank(target)) {
-            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(basename));
-            List<VOFile> fileList = Arrays.stream(listFiles)
-                    .map(file1 -> new VOFile(file1.getAbsolutePath()))
-                    .collect(Collectors.toList());
-
-            if (fileService.getTypeFile(fileList, target, false) == null) {
-                fileService.getTypeFile(fileList, target, true);
-            }
-        }
-
-        // to device
-        if (StringUtils.isNotBlank(devicePath)) {
-            final File[] listFiles = file.listFiles((dir, name) -> name.startsWith(basename));
-            List<VOFile> fileList = Arrays.stream(listFiles)
-                    .map(file1 -> new VOFile(file1.getAbsolutePath()))
-                    .collect(Collectors.toList());
-
-            final VOFile voFile = fileService.getTypeFile(fileList, target, false);
-            if (voFile != null) {
-                try {
-                    FileUtils.copyFileToDirectory(new File(voFile.getPath()), new File(devicePath));
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
-
-                }
-            }
         }
 
         fileService.fillNavigatorData(model, file, false);

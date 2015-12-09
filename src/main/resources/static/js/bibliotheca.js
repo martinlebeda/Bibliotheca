@@ -4,6 +4,21 @@ function tryDb(id) {
     $('#' + id).load("/tryDb?id=" + id);
 }
 
+// generate target format
+function generateTgt(id, tgt) {
+    $("#gen" + id).css("display","inline");
+    $('#' + id).load("/generateTgt", {'id': id, 'tgt': tgt}, function() {
+        $('#' + tgt + id)[0].click();
+
+    });
+}
+
+// generate and copy to reader
+function toReader(id, devFormat, devPath) {
+    $("#gen" + id).css("display","inline");
+    $('#' + id).load("/toReader", {'id': id, 'devFormat': devFormat, 'devPath': devPath});
+}
+
 // fill and show modal for manipulace with url
 function chooseDb(id, title, autor) {
     // prepare clean form

@@ -11,12 +11,9 @@ public interface BrowsePageService {
     /**
      * Get model for browsePage
      *
-     * @deprecated will be break to more atomic and interface will be dramatically changed
+     * @return model for page render
      */
-    @Deprecated
-    Map<String, Object> getModel(String path, final String booksearch, final String devicePath,
-                                 final String target,
-                                 final String basename);
+    Map<String, Object> getModel(String path, final String booksearch, final String basename);
 
     /**
      * Try automatic fetch metadata from databaze knih.

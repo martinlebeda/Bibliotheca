@@ -1,11 +1,13 @@
 package bibliotheca.web;
 
 import bibliotheca.config.ConfigService;
+import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
 import bibliotheca.model.VOUuid;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,8 +75,7 @@ public class MainControler {
                          @RequestParam(value = "target", required = false) String target,
                          @RequestParam(value = "basename", required = false) String basename,
                          final Model model) {
-        model.addAllAttributes(browsePageService.getModel(path, booksearch, devicePath, target, basename));
-//        model.addAttribute("chlist", null);
+        model.addAllAttributes(browsePageService.getModel(path, booksearch, basename));
         return "BrowsePage";
     }
 
@@ -82,8 +84,58 @@ public class MainControler {
         VOUuid voUuid = uuidService.getByUuid(id);
         // TODO Lebeda - přesunout
         model.addAllAttributes(browsePageService.tryDb(voUuid.getPath(), voUuid.getName()));
-//        return "BrowsePage";
         return "BrowsePage :: bookitem";
+    }
+
+    @RequestMapping("/generateTgt")
+    public String generateTgt(@RequestParam("id") String id, @RequestParam("tgt") String target, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+
+        // generate
+        List<VOFile> fileList = getVoFiles(voUuid);
+
+        if (fileService.getTypeFile(fileList, target, false) == null) {
+            fileService.getTypeFile(fileList, target, true);
+        }
+
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        model.addAttribute("p", fd);
+        return "BrowsePage :: bookitem";
+    }
+
+    @RequestMapping("/toReader")
+    public String toReader(@RequestParam("id") String id,
+                           @RequestParam("devFormat") String devFormat,
+                           @RequestParam("devPath") String devicePath,
+                           final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+
+        // to device
+        if (StringUtils.isNotBlank(devicePath)) {
+            List<VOFile> fileList = getVoFiles(voUuid);
+
+            final VOFile voFile = fileService.getTypeFile(fileList, devFormat, true);
+            if (voFile != null) {
+                try {
+                    FileUtils.copyFileToDirectory(new File(voFile.getPath()), new File(devicePath));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+
+                }
+            }
+        }
+
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        model.addAttribute("p", fd);
+        return "BrowsePage :: bookitem";
+    }
+
+    // TODO - JavaDoc - Lebeda
+    private List<VOFile> getVoFiles(VOUuid voUuid) {
+        final File[] listFiles = new File(voUuid.getPath()).listFiles((dir, name) -> name.startsWith(voUuid.getName()));
+        return Arrays.stream(listFiles)
+                .map(file1 -> new VOFile(file1.getAbsolutePath()))
+                .collect(Collectors.toList());
     }
 
     @RequestMapping("/chooseDbModalList")

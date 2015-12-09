@@ -51,6 +51,7 @@ public class MainRestControler {
     @Autowired
     DataBaseKnihService dataBaseKnihService;
 
+
     @RequestMapping("/cover")
     public byte[] cover(@RequestParam("path") String path) {
         File file = new File(path);
