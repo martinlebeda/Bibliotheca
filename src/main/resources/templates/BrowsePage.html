@@ -110,6 +110,15 @@
 
     </div>
 
+    <div class="row prevnextnav">
+        <div class="col-xs-6 navPrev">
+            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}" th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
+        </div>
+        <div class="col-xs-6 navNext">
+            <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a> <i class="fa fa-forward"></i>
+        </div>
+    </div>
+
     <div id="MainBody">
         <!-- Alert -->
         <!--<th:block th:fragment="alert">-->
@@ -208,7 +217,7 @@
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
                                     <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="https://www.google.cz/search?q=${p.bookFileName}"
+                                    <li><a th:href="|https://www.google.cz/search?q=${p.bookFileName}|"
                                            target="_blank">Google</a></li>
                                     <li><a
                                            onclick="chooseDb('123', 'title', 'author');"
@@ -245,6 +254,16 @@
             </th:block>
         </div>
     </div>
+
+    <div class="row prevnextnav">
+        <div class="col-xs-6 navPrev">
+            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}" th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
+        </div>
+        <div class="col-xs-6 navNext">
+            <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a> <i class="fa fa-forward"></i>
+        </div>
+    </div>
+
 </div>
 
 <div class="modal fade" id="chooseDbModal" tabindex="-1" role="dialog">

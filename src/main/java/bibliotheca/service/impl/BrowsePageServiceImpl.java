@@ -58,6 +58,32 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
         fileService.fillNavigatorData(model, file, false);
 
+        // get previous and next directory for navigation
+        File prevDir = null;
+        File nextDir = null;
+        List<File> parenDirList = new ArrayList<>();
+        File[] list = file.getParentFile().listFiles();
+        if (list != null) {
+            for (File file1 : list) {
+                if (file1.isDirectory()) {
+                    parenDirList.add(file1);
+                }
+            }
+            Collections.sort(parenDirList);
+            for (int i = 0; i < parenDirList.size(); i++) {
+                if (parenDirList.get(i).getName().equals(file.getName())) {
+                    if (i > 0) {
+                        prevDir = parenDirList.get(i - 1);
+                    }
+                    if (i < (parenDirList.size() - 1)) {
+                        nextDir = parenDirList.get(i + 1);
+                    }
+                }
+            }
+        }
+        model.put("nextDir", nextDir);
+        model.put("prevDir", prevDir);
+
         // search
         model.put(Tools.FRM_SEARCH, booksearch);
         List<File> dirs = new ArrayList<>();
@@ -117,10 +143,14 @@ public class BrowsePageServiceImpl implements BrowsePageService {
                     final String key = stringListEntry.getKey();
                     final List<VOFile> voFileList = stringListEntry.getValue();
 
+                    if (CollectionUtils.isNotEmpty(voFileList)) {
+                    String localPath = new File(voFileList.get(0).getPath()).getParentFile().getAbsolutePath();
+
                     @SuppressWarnings("unchecked")
-                    final VOFileDetail fileDetail = bookDetailService.getVoFileDetail(path, key, voFileList);
+                    final VOFileDetail fileDetail = bookDetailService.getVoFileDetail(localPath, key, voFileList);
 
                     fileDetails.add(fileDetail);
+                    }
                 });
 
         CollectionUtils.filter(fileDetails, object -> object != null);

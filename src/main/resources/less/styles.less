@@ -1,3 +1,6 @@
+@dirfontsize: 12px;
+@dircolor: #555555;
+
 .breadcrumb {
   margin-top: 4%;
   margin-bottom: 0;
@@ -13,7 +16,7 @@
   /*border: 1px solid;*/
   /*padding: 10px;*/
   white-space: nowrap;
-  color: #555555;
+  color: @dircolor;
 }
 
 .bookCover {
@@ -52,6 +55,25 @@
   margin: 10px;
 }
 
+.navNext {
+  a {
+    .directory;
+  }
+
+  text-align: right;
+  font-size: @dirfontsize;
+  color: @dircolor;
+}
+
+.navPrev {
+  a {
+    .directory;
+  }
+
+  font-size: @dirfontsize;
+  color: @dircolor;
+}
+
 #directories {
   // todo - autoprefixer
   margin: 20px 100px;
@@ -61,7 +83,7 @@
   -webkit-column-gap: 2em;
   -moz-column-gap: 2em;
   column-gap: 2em;
-  font-size: 12px;
+  font-size: @dirfontsize;
 
 }
 
