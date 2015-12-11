@@ -135,4 +135,7 @@ public interface DataBaseKnihService {
      * @param key name of book file without suffix
      */
     void clearMetadata(String path, String key);
+
+    // TODO - JavaDoc - Lebeda
+    List<VOFileDetail> getChooseJoinModalDataList(String path, String name);
 }

@@ -61,5 +61,5 @@ public interface FileService {
     File[] refreshFiles(final String basename, final File file, List<VOFile> voFileList);
 
     // TODO - JavaDoc - Lebeda
-    public void tidyUp(final File fileUklid);
+    public void tidyUp(final File fileFrom, final File tgtFile);
 }

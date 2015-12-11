@@ -1,5 +1,9 @@
 package bibliotheca.service;
 
+import bibliotheca.model.VOFileDetail;
+import bibliotheca.model.VOPath;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +28,9 @@ public interface BrowsePageService {
      */
     // TODO Lebeda - přesun
     Map<String, ?> tryDb(String path, String name);
+
+    // TODO - JavaDoc - Lebeda
+    List<VOFileDetail> getVoFileDetails(List<VOPath> fileList);
 
     /**
      * Load model for one book item.

@@ -118,6 +118,21 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         model.put("dirs", dirList);
 
         // soubory
+        List<VOFileDetail> fileDetails = getVoFileDetails(fileList);
+        model.put("fileDetails", fileDetails);
+
+        final List<VOPath> mhtFiles = fileList.stream()
+                .filter(voPath -> (
+                        voPath.getPath().toLowerCase().endsWith("mht")
+                                || voPath.getPath().toLowerCase().endsWith("mhtml")))
+                .sorted((o1, o2) -> o1.getName().compareTo(o2.getName()))
+                .collect(Collectors.toList());
+        model.put("mhtFiles", mhtFiles);
+
+        return model;
+    }
+
+    public List<VOFileDetail> getVoFileDetails(List<VOPath> fileList) {
         HashMap<String, List<VOFile>> fileMap = new HashMap<>();
         fileList.parallelStream()
                 .filter(voPath -> !(
@@ -167,17 +182,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
                 System.out.println("nic");
             }
         }
-        model.put("fileDetails", fileDetails);
-
-        final List<VOPath> mhtFiles = fileList.stream()
-                .filter(voPath -> (
-                        voPath.getPath().toLowerCase().endsWith("mht")
-                                || voPath.getPath().toLowerCase().endsWith("mhtml")))
-                .sorted((o1, o2) -> o1.getName().compareTo(o2.getName()))
-                .collect(Collectors.toList());
-        model.put("mhtFiles", mhtFiles);
-
-        return model;
+        return fileDetails;
     }
 
 

@@ -6,8 +6,8 @@ function tryDb(id) {
 
 // generate target format
 function generateTgt(id, tgt) {
-    $("#gen" + id).css("display","inline");
-    $('#' + id).load("/generateTgt", {'id': id, 'tgt': tgt}, function() {
+    $("#gen" + id).css("display", "inline");
+    $('#' + id).load("/generateTgt", {'id': id, 'tgt': tgt}, function () {
         $('#' + tgt + id)[0].click();
 
     });
@@ -15,7 +15,7 @@ function generateTgt(id, tgt) {
 
 // generate and copy to reader
 function toReader(id, devFormat, devPath) {
-    $("#gen" + id).css("display","inline");
+    $("#gen" + id).css("display", "inline");
     $('#' + id).load("/toReader", {'id': id, 'devFormat': devFormat, 'devPath': devPath});
 }
 
@@ -40,6 +40,21 @@ function saveDbUrl(url) {
     var id = $('#chooseDbModalIdBook').val();
     $('#' + id).load("/saveDbUrl", {'id': id, 'url': url}, reloadImageById(id));
     $('#chooseDbModal').modal('hide');
+}
+
+// load list of other books in path
+function chooseJoinModal(id) {
+    $('#chooseJoinModalData').load("/chooseJoinModalData", {'id': id});
+    $('#chooseJoinModal').modal('show');
+}
+
+// save filled url
+function joinTo(idFrom, idTo) {
+    $.get("/joinTo", {'idFrom': idFrom, 'idTo': idTo}, function (data) {
+        $('#' + idFrom).remove();
+        $('#' + idTo).load("/loadItem?id=" + idTo);
+    });
+    $('#chooseJoinModal').modal('hide');
 }
 
 // force download cower from databazeknih.cz

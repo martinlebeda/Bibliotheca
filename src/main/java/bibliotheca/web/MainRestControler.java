@@ -66,7 +66,7 @@ public class MainRestControler {
         }
     }
 
-//    @RequestMapping("/view/**{variable:.+}")
+    //    @RequestMapping("/view/**{variable:.+}")
 //    public byte[] view(@PathVariable String variable, HttpServletRequest request) {
     @RequestMapping("/view/**")
     public byte[] view(HttpServletRequest request) {
@@ -101,7 +101,9 @@ public class MainRestControler {
     }
 
     @RequestMapping("/download")
-    public @ResponseBody void download(@RequestParam("path") String path, HttpServletResponse response) {
+    public
+    @ResponseBody
+    void download(@RequestParam("path") String path, HttpServletResponse response) {
         try {
             File file = new File(path);
 
@@ -117,6 +119,7 @@ public class MainRestControler {
 
     /**
      * delete all files of book from disk
+     *
      * @param id id of book
      */
     @RequestMapping("/deleteBook")
@@ -148,17 +151,41 @@ public class MainRestControler {
     @RequestMapping("/tidyupBook")
     public void tidyupBook(@RequestParam("id") String id) {
         VOUuid voUuid = uuidService.getByUuid(id);
-        String path = voUuid.getPath();
-        String name = voUuid.getName();
 
-//        VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
-//        List<VOFile> files = fd.getFiles();
+        final File[] listFiles = new File(voUuid.getPath()).listFiles((dir, jm) -> jm.startsWith(voUuid.getName()));
 
-        final File[] listFiles = new File(path).listFiles((dir, jm) -> jm.startsWith(name));
-        Arrays.stream(listFiles).forEach(fileService::tidyUp);
+        Arrays.stream(listFiles).forEach((fileUklid) -> {
+            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
+            String author = StringUtils.trim(split[0]);
+            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
+            fileService.tidyUp(fileUklid, Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile());
+        });
 
-        // TODO Lebeda -
-//        uuidService.removeFromCache(id);
+        uuidService.removeFromCache(id);
+    }
+
+    @RequestMapping("/joinTo")
+    public void joinTo(@RequestParam("idFrom") String idFrom, @RequestParam("idTo") String idTo) {
+        VOUuid voUuidFrom = uuidService.getByUuid(idFrom);
+        VOUuid voUuidTo = uuidService.getByUuid(idTo);
+
+        final File[] listFiles = new File(voUuidFrom.getPath()).listFiles((dir, jm) -> jm.startsWith(voUuidFrom.getName()));
+
+        Arrays.stream(listFiles).forEach((fileFrom) -> {
+            if (fileFrom.getName().endsWith("nocover") || fileFrom.getName().endsWith("uuid")) {
+                fileFrom.delete();
+            } else {
+                File fileTo = new File(voUuidTo.getPath());
+                String tgtPath = fileTo.getAbsolutePath();
+                String tgtName = voUuidTo.getName();
+                String tgtExt = FilenameUtils.getExtension(fileFrom.getName());
+
+                File tgt = Paths.get(tgtPath, tgtName + "." + tgtExt).toFile();
+                fileService.tidyUp(fileFrom, tgt);
+            }
+        });
+
+        uuidService.removeFromCache(voUuidFrom.getUuid());
     }
 
 }

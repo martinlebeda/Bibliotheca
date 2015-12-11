@@ -392,38 +392,32 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void tidyUp(final File fileUklid) {
+    public void tidyUp(final File fileFrom, final File tgtFile) {
         try {
-            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
-            String author = StringUtils.trim(split[0]);
-            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
-
-            File tgtFile = Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile();
-
             if (tgtFile.exists()) {
-                String sha1Src = DigestUtils.sha1Hex(new FileInputStream(fileUklid));
+                String sha1Src = DigestUtils.sha1Hex(new FileInputStream(fileFrom));
                 String sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile));
 
                 if ((sha1Src.equals(sha1Tgt)
-                        || fileUklid.getName().endsWith("uuid"))
-                        || fileUklid.getName().endsWith("yaml")
-                        || fileUklid.getName().endsWith("mkd")
-                        || fileUklid.getName().endsWith("jpg")
-                        || fileUklid.getName().endsWith("yaml")
+                        || fileFrom.getName().endsWith("uuid"))
+                        || fileFrom.getName().endsWith("yaml")
+                        || fileFrom.getName().endsWith("mkd")
+                        || fileFrom.getName().endsWith("jpg")
+                        || fileFrom.getName().endsWith("yaml")
                         ) {
                     //noinspection ResultOfMethodCallIgnored
-                    fileUklid.delete();
+                    fileFrom.delete();
                 } else {
                     String pattern = "yyyyMMdd";
                     SimpleDateFormat format = new SimpleDateFormat(pattern);
-                    String newFileName = FilenameUtils.getBaseName(fileUklid.getName()) + ".bak"
-                            + format.format(new Date(fileUklid.lastModified()))
-                            + "." + FilenameUtils.getExtension(fileUklid.getName());
+                    String newFileName = FilenameUtils.getBaseName(fileFrom.getName()) + ".bak"
+                            + format.format(new Date(fileFrom.lastModified()))
+                            + "." + FilenameUtils.getExtension(fileFrom.getName());
                     Path tgtFileNahr = Paths.get(tgtFile.getParent(), newFileName);
-                    FileUtils.moveFile(fileUklid, tgtFileNahr.toFile());
+                    FileUtils.moveFile(fileFrom, tgtFileNahr.toFile());
                 }
             } else {
-                FileUtils.moveToDirectory(fileUklid, tgt, true);
+                FileUtils.moveFile(fileFrom, tgtFile);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e);

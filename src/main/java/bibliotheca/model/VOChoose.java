@@ -1,5 +1,8 @@
 package bibliotheca.model;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 7.12.15
@@ -15,6 +18,19 @@ public class VOChoose {
         this.title = title;
         this.url = url;
         this.urlimg = urlimg;
+    }
+
+    public String getAuthorSurrname() {
+        String[] split = StringUtils.split(other, ", ", 2);
+        String[] split1 = StringUtils.split(split[1], " ");
+        return split1[split1.length - 1];
+    }
+
+    public String getAuthorFirstname() {
+        String[] split = StringUtils.split(other, ", ", 2);
+        String[] split1 = StringUtils.split(split[1], " ");
+        String[] remove = ArrayUtils.remove(split1, split1.length - 1);
+        return StringUtils.join(remove, " ");
     }
 
     public String getOther() {
@@ -48,4 +64,6 @@ public class VOChoose {
     public void setUrlimg(String urlimg) {
         this.urlimg = urlimg;
     }
+
+
 }

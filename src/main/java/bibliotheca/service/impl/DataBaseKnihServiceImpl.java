@@ -1,15 +1,16 @@
 package bibliotheca.service.impl;
 
-import bibliotheca.model.VOChoose;
-import bibliotheca.model.VOFile;
-import bibliotheca.model.VOFileDetail;
+import bibliotheca.model.*;
+import bibliotheca.service.BrowsePageService;
 import bibliotheca.service.DataBaseKnihService;
 import bibliotheca.tools.Tools;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
@@ -17,10 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +27,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DataBaseKnihServiceImpl implements DataBaseKnihService {
+
+    @Autowired
+    private BrowsePageService browsePageService;
 
     private Map<String, Document> cacheDoc = new HashMap<>();
 
@@ -94,6 +95,19 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
         if (metadataFile.exists()) {
             metadataFile.delete();
         }
+    }
+
+    @Override
+    public List<VOFileDetail> getChooseJoinModalDataList(String path, String name) {
+        // najít všechny knihy v directory
+        File[] files = new File(path).listFiles();
+        List<VOPath> voPathList = Arrays.asList(files).stream()
+                .filter(file -> !StringUtils.startsWith(file.getName(), name))
+                .filter(File::isFile)
+                .map(VOPath::new)
+                .collect(Collectors.toList());
+
+        return browsePageService.getVoFileDetails(voPathList);
     }
 
     @Override
@@ -226,6 +240,11 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
                             "http://www.databazeknih.cz/" + element.select("a.search_to_stats").attr("href"),
                             element.select("a.search_to_stats").text(),
                             element.select(".smallfind").text()))
+                    .sorted((o1, o2) -> new CompareToBuilder()
+                            .append(o1.getAuthorSurrname(), o2.getAuthorSurrname())
+                            .append(o1.getAuthorFirstname(), o2.getAuthorFirstname())
+                            .append(o1.getTitle(), o2.getTitle())
+                            .toComparison())
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new IllegalStateException(e);

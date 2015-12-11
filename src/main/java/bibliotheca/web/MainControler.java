@@ -87,6 +87,14 @@ public class MainControler {
         return "BrowsePage :: bookitem";
     }
 
+    @RequestMapping("/loadItem")
+    public String loadItem(@RequestParam("id") String id, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        model.addAttribute("p", fd);
+        return "BrowsePage :: bookitem";
+    }
+
     @RequestMapping("/generateTgt")
     public String generateTgt(@RequestParam("id") String id, @RequestParam("tgt") String target, final Model model) {
         VOUuid voUuid = uuidService.getByUuid(id);
@@ -144,6 +152,14 @@ public class MainControler {
         VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
         model.addAttribute("chlist", dataBaseKnihService.getChooseDbModalList(fd.getBookname()));
         return "BrowsePage :: chooseListItem";
+    }
+
+    @RequestMapping("/chooseJoinModalData")
+    public String chooseJoinModalData(@RequestParam("id") String id, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        model.addAttribute("chlist", dataBaseKnihService.getChooseJoinModalDataList(voUuid.getPath(), voUuid.getName()));
+        model.addAttribute("idFrom", id);
+        return "BrowsePage :: chooseJoinModalData";
     }
 
     @RequestMapping("/downloadCover")
