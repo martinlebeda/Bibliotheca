@@ -41,4 +41,9 @@ public interface BrowsePageService {
      */
     Map<String, Object> loadItemModel(String path, String name);
 
+    // TODO - JavaDoc - Lebeda
+    void tryDbAll(String path);
+
+    // TODO - JavaDoc - Lebeda
+    void tidyUpAll(String path);
 }

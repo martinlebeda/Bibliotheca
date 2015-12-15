@@ -227,4 +227,20 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         return model;
     }
 
+    @Override
+    public void tryDbAll(String path) {
+        getVoFileDetails(Tools.getVoPaths(path)).parallelStream()
+                .filter(voFileDetail -> !voFileDetail.getDbknihUrlExists())
+                .forEach(voFileDetail1 -> dataBaseKnihService.tryDb(voFileDetail1));
+    }
+
+    @Override
+    public void tidyUpAll(String path) {
+        getVoFileDetails(Tools.getVoPaths(path)).parallelStream()
+                .filter(VOFileDetail::getDbknihUrlExists)
+                .filter(VOFileDetail::isTidyUp)
+                .forEach(voFileDetail1 -> fileService.tidyUpBook(voFileDetail1.getBookFileName(), path));
+    }
+
+
 }

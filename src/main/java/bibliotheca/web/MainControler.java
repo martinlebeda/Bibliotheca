@@ -71,10 +71,16 @@ public class MainControler {
     @RequestMapping("/browse")
     public String browse(@RequestParam("path") String path,
                          @RequestParam(value = "booksearch", required = false) String booksearch,
-                         @RequestParam(value = "devicePath", required = false) String devicePath,
-                         @RequestParam(value = "target", required = false) String target,
+                         @RequestParam(value = "action", required = false) String action,
                          @RequestParam(value = "basename", required = false) String basename,
                          final Model model) {
+        if ("trydball".equals(action)) {
+            browsePageService.tryDbAll(path);
+        }
+        if ("cleanupall".equals(action)) {
+            browsePageService.tidyUpAll(path);
+        }
+
         model.addAllAttributes(browsePageService.getModel(path, booksearch, basename));
         return "BrowsePage";
     }

@@ -83,6 +83,9 @@
                             <li>
                                 <a th:href="|editDir?path=${path}|">Edit</a>
                             </li>
+                            <li role="presentation" class="divider"></li>
+                            <li><a th:href="|browse?path=${path}&amp;action=trydball|">TryDB all unidentified</a></li>
+                            <li><a th:href="|browse?path=${path}&amp;action=cleanupall|">Move all identified</a></li>
                         </ul>
                     </li>
                 </ul>

@@ -424,4 +424,18 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Override
+    public void tidyUpBook(String name, String path) {
+        final File[] listFiles = new File(path).listFiles((dir, jm) -> {
+            return jm.startsWith(name);
+        });
+
+        Arrays.stream(listFiles).forEach((fileUklid) -> {
+            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
+            String author = StringUtils.trim(split[0]);
+            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
+            tidyUp(fileUklid, Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile());
+        });
+    }
+
 }

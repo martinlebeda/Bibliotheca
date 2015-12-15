@@ -1,6 +1,7 @@
 package bibliotheca.tools;
 
 import bibliotheca.model.VOFile;
+import bibliotheca.model.VOPath;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -18,7 +19,9 @@ import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -213,5 +216,14 @@ public class Tools {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    // TODO - JavaDoc - Lebeda
+    public static List<VOPath> getVoPaths(String path) {
+        File[] files = new File(path).listFiles();
+        return Arrays.asList(files).stream()
+                .filter(File::isFile)
+                .map(VOPath::new)
+                .collect(Collectors.toList());
     }
 }

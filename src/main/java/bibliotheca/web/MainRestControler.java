@@ -151,18 +151,15 @@ public class MainRestControler {
     @RequestMapping("/tidyupBook")
     public void tidyupBook(@RequestParam("id") String id) {
         VOUuid voUuid = uuidService.getByUuid(id);
+        final String name = voUuid.getName();
+        final String path = voUuid.getPath();
 
-        final File[] listFiles = new File(voUuid.getPath()).listFiles((dir, jm) -> jm.startsWith(voUuid.getName()));
-
-        Arrays.stream(listFiles).forEach((fileUklid) -> {
-            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
-            String author = StringUtils.trim(split[0]);
-            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
-            fileService.tidyUp(fileUklid, Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile());
-        });
+        fileService.tidyUpBook(name, path);
 
         uuidService.removeFromCache(id);
     }
+
+
 
     @RequestMapping("/joinTo")
     public void joinTo(@RequestParam("idFrom") String idFrom, @RequestParam("idTo") String idTo) {

@@ -62,4 +62,7 @@ public interface FileService {
 
     // TODO - JavaDoc - Lebeda
     public void tidyUp(final File fileFrom, final File tgtFile);
+
+    // TODO - JavaDoc - Lebeda
+    void tidyUpBook(String name, String path);
 }
