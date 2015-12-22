@@ -5,6 +5,7 @@ import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOUuid;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -160,7 +161,6 @@ public class MainRestControler {
     }
 
 
-
     @RequestMapping("/joinTo")
     public void joinTo(@RequestParam("idFrom") String idFrom, @RequestParam("idTo") String idTo) {
         VOUuid voUuidFrom = uuidService.getByUuid(idFrom);
@@ -183,6 +183,26 @@ public class MainRestControler {
         });
 
         uuidService.removeFromCache(voUuidFrom.getUuid());
+    }
+
+    @RequestMapping("/joinToDir")
+    public void joinToDir(@RequestParam("srcPath") String srcPath, @RequestParam("tgtPath") String tgtPath) {
+        File srcFile = new File(srcPath);
+
+        final File[] listFiles = srcFile.listFiles();
+
+        Arrays.stream(listFiles)
+                .sorted()
+                .forEach(file -> {
+                    File tgt = Paths.get(tgtPath, file.getName()).toFile();
+                    fileService.tidyUp(file, tgt);
+                });
+
+        try {
+            FileUtils.deleteDirectory(srcFile);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 }

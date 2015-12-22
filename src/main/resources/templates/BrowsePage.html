@@ -86,6 +86,10 @@
                             <li role="presentation" class="divider"></li>
                             <li><a th:href="|browse?path=${path}&amp;action=trydball|">TryDB all unidentified</a></li>
                             <li><a th:href="|browse?path=${path}&amp;action=cleanupall|">Move all identified</a></li>
+                            <li>
+                                <a th:onclick="'javascript:chooseJoinModalDir(\'' + ${navigatorFile} + '\', \'' + ${path} + '\');'">Join
+                                    to ...</a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -115,10 +119,12 @@
 
     <div class="row prevnextnav">
         <div class="col-xs-6 navPrev">
-            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}" th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
+            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}"
+                                              th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
         </div>
         <div class="col-xs-6 navNext">
-            <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a> <i class="fa fa-forward"></i>
+            <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a>
+            <i class="fa fa-forward"></i>
         </div>
     </div>
 
@@ -184,15 +190,16 @@
                                th:id="${f.ext} + ${p.uuid}"
                                th:href="|download?path=${f.path}|" th:text="${#strings.toLowerCase(f.ext)}">epub</a>
 
-                            <span th:id="|gen${p.uuid}|" style="display: none"><i class="fa fa-spinner fa-spin"></i></span>
+                            <span th:id="|gen${p.uuid}|" style="display: none"><i
+                                    class="fa fa-spinner fa-spin"></i></span>
 
                             <div class="dropdown spaceAround">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
                                     <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                                 <ul class="dropdown-menu">
                                     <li><a
-                                           th:href="|view${encodedPath}/${p.encodedName}.htmlz/pack/index.html|"
-                                           target="_blank">View</a></li>
+                                            th:href="|view${encodedPath}/${p.encodedName}.htmlz/pack/index.html|"
+                                            target="_blank">View</a></li>
                                     <li role="presentation" class="divider"></li>
                                     <li th:each="t : ${p.targets}"><a class="file-target"
                                                                       th:onclick="'javascript:generateTgt(\'' + ${p.uuid} + '\',\'' + ${t} + '\');'"
@@ -223,30 +230,52 @@
                                     <li><a th:href="|https://www.google.cz/search?q=${p.bookFileName}|"
                                            target="_blank">Google</a></li>
                                     <li><a
-                                           onclick="chooseDb('123', 'title', 'author');"
-                                           th:onclick="'javascript:chooseDb(\'' + ${p.uuid} + '\', \'' + ${p.bookname} + '\', \'' + ${p.bookauthor} + '\');'">
+                                            onclick="chooseDb('123', 'title', 'author');"
+                                            th:onclick="'javascript:chooseDb(\'' + ${p.uuid} + '\', \'' + ${p.bookname} + '\', \'' + ${p.bookauthor} + '\');'">
                                         DatabázeKnih</a></li>
-                                    <li th:if="${p.dbknihUrlExists}"><a th:onclick="'javascript:downloadCover(\'' + ${p.uuid} + '\');'">Refresh cover</a></li>
-                                    <li th:if="${p.dbknihUrlExists}"><a th:onclick="'javascript:clearMetadata(\'' + ${p.uuid} + '\');'">Clear metadata</a></li>
-                                    <li th:unless="${p.dbknihUrlExists}"><a th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}" target="_blank">DatabázeKnih - title</a> </li>
-                                    <li th:unless="${p.dbknihUrlExists}"><a th:href="@{|http://www.databazeknih.cz/search?q=${p.bookauthor}&amp;in=authors|}" target="_blank">DatabázeKnih - authors</a> </li>
+                                    <li th:if="${p.dbknihUrlExists}"><a
+                                            th:onclick="'javascript:downloadCover(\'' + ${p.uuid} + '\');'">Refresh
+                                        cover</a></li>
+                                    <li th:if="${p.dbknihUrlExists}"><a
+                                            th:onclick="'javascript:clearMetadata(\'' + ${p.uuid} + '\');'">Clear
+                                        metadata</a></li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a
+                                            th:href="@{|http://www.databazeknih.cz/search?q=${p.bookname}&amp;hledat=&amp;stranka=search|}"
+                                            target="_blank">DatabázeKnih - title</a></li>
+                                    <li th:unless="${p.dbknihUrlExists}"><a
+                                            th:href="@{|http://www.databazeknih.cz/search?q=${p.bookauthor}&amp;in=authors|}"
+                                            target="_blank">DatabázeKnih - authors</a></li>
                                     <li role="presentation" class="divider"></li>
-                                    <li><a th:href="@{|http://xtrance.info/new/?mainpage=pub&amp;subpage=&amp;pub_filter=f:${p.bookname}|}" target="_blank">xTrance - title</a> </li>
-                                    <li th:unless="${#strings.isEmpty(p.serie)}"><a th:href="@{|http://xtrance.info/new/?mainpage=pub&amp;subpage=&amp;ser_filter=f:${p.serie}|}" target="_blank">xTrance - Serie</a> </li>
-                                    <li><a th:href="@{|http://xtrance.info/new/?mainpage=aut&amp;subpage=&amp;aut_filter=f:${p.bookauthor}|}" target="_blank">xTrance - authors</a> </li>
+                                    <li>
+                                        <a th:href="@{|http://xtrance.info/new/?mainpage=pub&amp;subpage=&amp;pub_filter=f:${p.bookname}|}"
+                                           target="_blank">xTrance - title</a></li>
+                                    <li th:unless="${#strings.isEmpty(p.serie)}"><a
+                                            th:href="@{|http://xtrance.info/new/?mainpage=pub&amp;subpage=&amp;ser_filter=f:${p.serie}|}"
+                                            target="_blank">xTrance - Serie</a></li>
+                                    <li>
+                                        <a th:href="@{|http://xtrance.info/new/?mainpage=aut&amp;subpage=&amp;aut_filter=f:${p.bookauthor}|}"
+                                           target="_blank">xTrance - authors</a></li>
                                     <li role="presentation" class="divider"></li>
                                     <li><a
-                                           th:href="|view${path}/${p.bookFileName}.htmlz/pack/index.html|"
-                                           target="_blank">View</a></li>
-                                    <li><a
-                                           th:href="|editFile?path=${path}&amp;basename=${p.bookFileName}|">Edit</a></li>
-                                    <li th:each="d : ${p.devices}"><a th:onclick="'javascript:toReader(\'' + ${p.uuid} + '\',\'' + ${d.format}  + '\',\'' + ${d.path}  + '\');'"
-                                                                      th:text="${d.name}">PocketBook</a></li>
-                                            <!--th:href="|browse?path=${path}&amp;basename=${p.bookFileName}&amp;target=${d.format}&amp;devicePath=${d.path}|"-->
-                                    <li th:if="${p.tidyUp}"><a th:onclick="'javascript:tidyupBook(\'' + ${p.uuid} + '\');'" th:text="|Move to &quot;${p.bookauthor}&quot;|">Move to ...</a></li>
-                                    <li><a th:onclick="'javascript:chooseJoinModal(\'' + ${p.uuid} + '\');'">Join to ...</a></li>
+                                            th:href="|view${path}/${p.bookFileName}.htmlz/pack/index.html|"
+                                            target="_blank">View</a></li>
+                                    <li><a onclick="editMeta('123');"
+                                           th:onclick="'javascript:editMeta(\'' + ${p.uuid} + '\');'">Edit</a>
+                                    </li>
+                                    <li><a th:href="|editFile?path=${path}&amp;basename=${p.bookFileName}|">EditOld</a></li>
+                                    <li th:each="d : ${p.devices}"><a
+                                            th:onclick="'javascript:toReader(\'' + ${p.uuid} + '\',\'' + ${d.format}  + '\',\'' + ${d.path}  + '\');'"
+                                            th:text="${d.name}">PocketBook</a></li>
+                                    <!--th:href="|browse?path=${path}&amp;basename=${p.bookFileName}&amp;target=${d.format}&amp;devicePath=${d.path}|"-->
+                                    <li th:if="${p.tidyUp}"><a
+                                            th:onclick="'javascript:tidyupBook(\'' + ${p.uuid} + '\');'"
+                                            th:text="|Move to &quot;${p.bookauthor}&quot;|">Move to ...</a></li>
+                                    <li>
+                                        <a th:onclick="'javascript:chooseJoinModal(\'' + ${p.title} + '\', \'' + ${p.uuid} + '\');'">Join
+                                            to
+                                            ...</a></li>
                                     <li role="presentation" class="divider"></li>
-                                    <li><a th:onclick="'javascript:deleteBook(\'' + ${p.uuid} + '\');'">Delete</a> </li>
+                                    <li><a th:onclick="'javascript:deleteBook(\'' + ${p.uuid} + '\');'">Delete</a></li>
                                 </ul>
                             </div>
 
@@ -260,10 +289,12 @@
 
     <div class="row prevnextnav">
         <div class="col-xs-6 navPrev">
-            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}" th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
+            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}"
+                                              th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
         </div>
         <div class="col-xs-6 navNext">
-            <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a> <i class="fa fa-forward"></i>
+            <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a>
+            <i class="fa fa-forward"></i>
         </div>
     </div>
 
@@ -329,10 +360,10 @@
                     <th:block th:fragment="chooseJoinModalData">
                         <div th:each="l : ${chlist}" class="row"
                              th:onclick="'javascript:joinTo(\'' + ${idFrom} + '\', \'' + ${l.uuid} + '\');'">
+                            <h5 th:if="${l.dbknihUrlExists}"><i class="fa fa-check-square-o"></i></h5>
                             <h5 th:text="|${l.title}|">Title and serie</h5>
-                            <h6 th:if="${l.dbknihUrlExists}" th:text="${l.dbknihUrl}">url_to_db</h6>
                             <h6 th:text="${l.bookFileName}">url_to_db</h6>
-                        <!--<a class="" id="chooseDbModalAuthorUrl" href="#" target="_blank">DatabázeKnih - authors</a>-->
+                            <!--<a class="" id="chooseDbModalAuthorUrl" href="#" target="_blank">DatabázeKnih - authors</a>-->
                         </div>
                     </th:block>
                 </div>
@@ -344,8 +375,104 @@
     </div>
 </div>
 
+<div class="modal fade" id="chooseJoinModalDir" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Join to another book</h4>
+            </div>
+            <div class="modal-body">
+                <div id="chooseJoinModalDirData">
+                    <th:block th:fragment="chooseJoinModalDirData">
+                        <div th:each="l : ${chlist}" class="row"
+                             th:onclick="'javascript:joinToDir(\'' + ${srcPath} + '\', \'' + ${l.path} + '\');'">
+                            <h5 th:text="|${l.title}|">Path name</h5>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editMeta" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Choose from database</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form" id="modalEditMetaForm">
+                    <th:block th:fragment="modalEditMetaForm" th:if="${p}">
+                        <input type="hidden" id="modalEditMetaFormIdBook" name="uuid" value="chooseDbModalUrl"/>
+                        <div class="form-group">
+                            <label for="modalEditMetaFormDbUrl">URL:</label>
+                            <input type="url" class="form-control" id="modalEditMetaFormDbUrl" name="dbknihUrl"
+                                   placeholder="url from Databazeknih.cz" th:value="${p.dbknihUrl}"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalEditMetaFormDbcover">Cover:</label>
+                            <input type="url" class="form-control" id="modalEditMetaFormDbCover" name="cover"
+                                   placeholder="url for new cover" value=""/>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalEditMetaFormDbbookFileName">File name:</label>
+                            <input type="text" class="form-control" name="bookFileName" id="modalEditMetaFormDbbookFileName"
+                                   th:value="${p.bookFileName}"/>
+                        </div>
+                        <hr/>
+                        <div class="form-group">
+                            <label for="modalEditMetaFormDbtitle">Title:</label>
+                            <input type="text" class="form-control" name="title" id="modalEditMetaFormDbtitle"
+                                   th:value="${p.title}"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalEditMetaFormDbserie">Serie:</label>
+                            <input type="text" class="form-control" name="serie" id="modalEditMetaFormDbserie"
+                                   th:value="${p.serie}"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalEditMetaFormDbauthor">Author:</label>
+                            <input type="text" class="form-control" name="author" id="modalEditMetaFormDbauthor"
+                                   th:value="${p.author}"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalEditMetaFormDbdesc">Description:</label>
+                            <textarea class="form-control" rows="5" name="desc" id="modalEditMetaFormDbdesc"
+                                      th:field="${p.desc}"></textarea>
+                        </div>
+
+                        <!--<div class="form-group">-->
+                            <!--<label for="modalEditMetaFormDb">:</label>-->
+                            <!--<input type="text" class="form-control" name="" id="modalEditMetaFormDb">-->
+                        <!--</div>-->
+
+                        <!--<button type="button" class="btn btn-default chooseDbModalInlineFormItem" onclick="saveDbUrl();">-->
+                            <!--Save-->
+                        <!--</button>-->
+                    </th:block>
+                </form>
+                <hr/>
+                <a class="" href="#" target="_blank">DatabázeKnih - title</a>
+                <a class="" href="#" target="_blank">DatabázeKnih - authors</a>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!--<iframe id="helper_download" style="display:none;"></iframe>-->
-    <!--only helper for automatic download-->
+<!--only helper for automatic download-->
 <!--<frame/>-->
 
 

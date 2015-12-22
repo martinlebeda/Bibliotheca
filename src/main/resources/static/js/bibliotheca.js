@@ -34,6 +34,11 @@ function chooseDb(id, title, autor) {
     $('#chooseDbModal').modal('show');
 }
 
+function editMeta(id) {
+    $('#modalEditMetaForm').load("/modalEditMetaForm", {'id': id});
+    $('#editMeta').modal('show');
+}
+
 // save filled url
 function saveDbUrl(url) {
     url = url || $('#chooseDbModalUrl').val(); // if not param, get it from frm
@@ -43,9 +48,26 @@ function saveDbUrl(url) {
 }
 
 // load list of other books in path
-function chooseJoinModal(id) {
-    $('#chooseJoinModalData').load("/chooseJoinModalData", {'id': id});
+function chooseJoinModal(title, id) {
+    $('#chooseJoinModalData').load("/chooseJoinModalData", {'id': id}, function () {
+        $('#chooseJoinModal').find('> div > div > div.modal-header > h4').text("Join \"" + title + "\" to ...")
+    });
     $('#chooseJoinModal').modal('show');
+}
+
+
+// load list of other books in path
+function chooseJoinModalDir(title, path) {
+    $('#chooseJoinModalDirData').load("/chooseJoinModalDirData", {'path': path}, function () {
+        $('#chooseJoinModalDir').find('> div > div > div.modal-header > h4').text("Join \"" + title + "\" to ...")
+    });
+    $('#chooseJoinModalDir').modal('show');
+}
+
+function joinToDir(srcPath, tgtPath) {
+    $.get("/joinToDir", {'srcPath': srcPath, 'tgtPath': tgtPath}, function (data) {
+        window.location.href = "/browse" + "?path=" + tgtPath;
+    });
 }
 
 // save filled url

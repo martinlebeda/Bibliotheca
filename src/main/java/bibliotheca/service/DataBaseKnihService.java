@@ -1,6 +1,7 @@
 package bibliotheca.service;
 
 import bibliotheca.model.VOChoose;
+import bibliotheca.model.VODirData;
 import bibliotheca.model.VOFileDetail;
 import org.jsoup.nodes.Document;
 
@@ -138,4 +139,6 @@ public interface DataBaseKnihService {
 
     // TODO - JavaDoc - Lebeda
     List<VOFileDetail> getChooseJoinModalDataList(String path, String name);
+
+    List<VODirData> getChooseJoinModalDirDataList(String path);
 }

@@ -17,12 +17,12 @@ import java.util.*;
  *         Date: 16.12.14
  */
 public class VOFileDetail {
-    private final String bookFileName;
+    private String bookFileName;
     private String cover;
     private String dbknihUrl;
     private final List<VOFile> files = new ArrayList<>();
     private String desc;
-    private final String path;
+    private String path;
     private final List<String> targets = new ArrayList<>();
     private List<VODevice> devices = new ArrayList<>();
 
@@ -40,6 +40,10 @@ public class VOFileDetail {
 
     private String uuid;
     private boolean dirty = false;
+
+    public VOFileDetail() {
+        super();
+    }
 
     public VOFileDetail(final String uuid, final String bookFileName, final String cover, final String desc, String path, Map<String, Object> metadata) {
         this.uuid = uuid;
@@ -59,6 +63,14 @@ public class VOFileDetail {
         this.authors.addAll(CollectionUtils.emptyIfNull((List <String>) metadata.get(Tools.METADATA_KEY_AUTHORS)));
     }
 
+    public void setBookFileName(String bookFileName) {
+        this.bookFileName = bookFileName;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     public boolean isDirty() {
         return dirty;
     }
@@ -73,6 +85,10 @@ public class VOFileDetail {
         meta.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ_HODNOCENI_PROCENTO, this.hodnoceniDbProcento);
 
         return meta;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getPath() {

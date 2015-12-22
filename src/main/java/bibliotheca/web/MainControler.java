@@ -74,15 +74,22 @@ public class MainControler {
                          @RequestParam(value = "action", required = false) String action,
                          @RequestParam(value = "basename", required = false) String basename,
                          final Model model) {
+        String redirect = null;
         if ("trydball".equals(action)) {
             browsePageService.tryDbAll(path);
+            redirect = "/browse?path=" + path;
         }
         if ("cleanupall".equals(action)) {
             browsePageService.tidyUpAll(path);
+            redirect = "/browse?path=" + path;
         }
 
-        model.addAllAttributes(browsePageService.getModel(path, booksearch, basename));
-        return "BrowsePage";
+        if (StringUtils.isNoneBlank(redirect)) {
+            return "redirect:" + redirect;
+        } else {
+            model.addAllAttributes(browsePageService.getModel(path, booksearch, basename));
+            return "BrowsePage";
+        }
     }
 
     @RequestMapping("/tryDb")
@@ -115,6 +122,14 @@ public class MainControler {
         VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
         model.addAttribute("p", fd);
         return "BrowsePage :: bookitem";
+    }
+
+    @RequestMapping("/modalEditMetaForm")
+    public String modalEditMetaForm(@RequestParam("id") String id, final Model model) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        VOFileDetail fd = bookDetailService.getVoFileDetail(voUuid.getPath(), voUuid.getName());
+        model.addAttribute("p", fd);
+        return "BrowsePage :: modalEditMetaForm";
     }
 
     @RequestMapping("/toReader")
@@ -166,6 +181,13 @@ public class MainControler {
         model.addAttribute("chlist", dataBaseKnihService.getChooseJoinModalDataList(voUuid.getPath(), voUuid.getName()));
         model.addAttribute("idFrom", id);
         return "BrowsePage :: chooseJoinModalData";
+    }
+
+    @RequestMapping("/chooseJoinModalDirData")
+    public String chooseJoinModalDirData(@RequestParam("path") String path, final Model model) {
+        model.addAttribute("chlist", dataBaseKnihService.getChooseJoinModalDirDataList(path));
+        model.addAttribute("srcPath", path);
+        return "BrowsePage :: chooseJoinModalDirData";
     }
 
     @RequestMapping("/downloadCover")

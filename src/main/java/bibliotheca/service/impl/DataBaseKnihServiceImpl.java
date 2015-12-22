@@ -107,12 +107,32 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
                 .map(VOPath::new)
                 .collect(Collectors.toList());
 
-        return browsePageService.getVoFileDetails(voPathList);
+        return browsePageService.getVoFileDetails(voPathList).stream()
+                .sorted((o1, o2) -> new CompareToBuilder()
+                        .append(o2.getDbknihUrlExists(), o1.getDbknihUrlExists())
+                        .append(o1.getTitle(), o2.getTitle())
+                        .toComparison())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<VODirData> getChooseJoinModalDirDataList(String path) {
+        File file = new File(path);
+        File[] files = file.getParentFile().listFiles();
+        assert files != null;
+        return Arrays.asList(files).stream()
+                .filter(File::isDirectory)
+                .filter(file1 -> !StringUtils.equals(file1.getName(), file.getName()))
+                .map(VODirData::new)
+                .sorted((o1, o2) -> new CompareToBuilder()
+                        .append(o2.getTitle(), o1.getTitle())
+                        .toComparison())
+                .collect(Collectors.toList());
     }
 
     @Override
     public void loadFromDBKnih(VOFileDetail fileDetail) {
-       loadFromDBKnih(fileDetail, false);
+        loadFromDBKnih(fileDetail, false);
     }
 
 
