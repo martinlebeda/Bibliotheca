@@ -26,7 +26,6 @@ public interface BrowsePageService {
      * @param name name of book file without suffix
      * @return part of model for page render
      */
-    // TODO Lebeda - přesun
     boolean tryDb(String path, String name);
 
     // TODO - JavaDoc - Lebeda

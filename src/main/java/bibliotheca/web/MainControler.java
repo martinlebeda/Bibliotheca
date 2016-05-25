@@ -94,14 +94,6 @@ public class MainControler {
         }
     }
 
-//    @RequestMapping("/tryDb")
-//    public String tryDb(@RequestParam("id") String id, final Model model) {
-//        VOUuid voUuid = uuidService.getByUuid(id);
-//        // TODO Lebeda - přesunout
-//        model.addAllAttributes(browsePageService.tryDb(voUuid.getPath(), voUuid.getName()));
-//        return "BrowsePage :: bookitem";
-//    }
-
     @RequestMapping("/loadItem")
     public String loadItem(@RequestParam("id") String id, final Model model) {
         VOUuid voUuid = uuidService.getByUuid(id);
