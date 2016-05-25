@@ -187,26 +187,22 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
 
     @Override
-    public Map<String, Object> tryDb(String path, String name) {
-        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
+    public boolean tryDb(String path, String name) {
+//        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
-        File file = new File(path);
-        model.put(Tools.PARAM_PATH, file.getAbsolutePath());
-        try {
-            model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+//        File file = new File(path);
+//        model.put(Tools.PARAM_PATH, file.getAbsolutePath());
+//            model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
 
         VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
-        dataBaseKnihService.tryDb(fd);
+        return dataBaseKnihService.tryDb(fd);
+//
+////        List<VOFileDetail> fileDetails = new ArrayList<>();
+////        fileDetails.add(fd);
+////        model.put("fileDetails", fileDetails);
+//        model.put("p", fd);
 
-//        List<VOFileDetail> fileDetails = new ArrayList<>();
-//        fileDetails.add(fd);
-//        model.put("fileDetails", fileDetails);
-        model.put("p", fd);
-
-        return model;
+//        return model;
     }
 
     @Override

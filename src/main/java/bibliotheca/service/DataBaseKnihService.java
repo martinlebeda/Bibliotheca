@@ -59,7 +59,7 @@ public interface DataBaseKnihService {
      *
      * @param fileDetail detail of book
      */
-    void tryDb(VOFileDetail fileDetail);
+    boolean tryDb(VOFileDetail fileDetail);
 
     /**
      * Extract book description from databazeknih.cz

@@ -1,7 +1,14 @@
 // try automatic find url and load changes if founded successfully
-function tryDb(id) {
+function tryDb(id, title, autor) {
     //alert(id);
-    $('#' + id).load("/tryDb?id=" + id);
+    $.getJSON("/tryDb?id=" + id, function (data) {
+        if (data.tryDb == 1) {
+            $('#' + id).load("/loadItem?id=" + id);
+        } else {
+            chooseDb(id, title, autor);
+        }
+    });
+
 }
 
 // generate target format

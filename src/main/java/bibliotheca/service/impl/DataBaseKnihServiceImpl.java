@@ -151,7 +151,7 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
         }
     }
 
-    public void tryDb(VOFileDetail fileDetail) {
+    public boolean tryDb(VOFileDetail fileDetail) {
         String dbKnihUrl = getAutomaticDBKnihUrl(fileDetail.getBookname());
         if (StringUtils.isNotBlank(dbKnihUrl)) {
             fileDetail.setDbknihUrl(dbKnihUrl);
@@ -164,6 +164,10 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
                 Tools.writeDescription(fileDetail.getPath(), fileDetail.getBookFileName(), description);
                 fileDetail.setDesc(description);
             }
+
+            return true;
+        } else {
+            return false;
         }
     }
 

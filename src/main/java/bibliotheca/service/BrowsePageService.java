@@ -27,7 +27,7 @@ public interface BrowsePageService {
      * @return part of model for page render
      */
     // TODO Lebeda - přesun
-    Map<String, ?> tryDb(String path, String name);
+    boolean tryDb(String path, String name);
 
     // TODO - JavaDoc - Lebeda
     List<VOFileDetail> getVoFileDetails(List<VOPath> fileList);

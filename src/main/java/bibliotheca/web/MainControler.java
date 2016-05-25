@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -68,20 +69,21 @@ public class MainControler {
         return "MainPage";
     }
 
+//    @SneakyThrows
     @RequestMapping("/browse")
     public String browse(@RequestParam("path") String path,
                          @RequestParam(value = "booksearch", required = false) String booksearch,
                          @RequestParam(value = "action", required = false) String action,
                          @RequestParam(value = "basename", required = false) String basename,
-                         final Model model) {
+                         final Model model) throws UnsupportedEncodingException {
         String redirect = null;
         if ("trydball".equals(action)) {
             browsePageService.tryDbAll(path);
-            redirect = "/browse?path=" + path;
+            redirect = "/browse?path=" + URLEncoder.encode(path, "UTF-8").replaceAll("%2F", "/");
         }
         if ("cleanupall".equals(action)) {
             browsePageService.tidyUpAll(path);
-            redirect = "/browse?path=" + path;
+            redirect = "/browse?path=" + URLEncoder.encode(path, "UTF-8").replaceAll("%2F", "/");
         }
 
         if (StringUtils.isNoneBlank(redirect)) {
@@ -92,13 +94,13 @@ public class MainControler {
         }
     }
 
-    @RequestMapping("/tryDb")
-    public String tryDb(@RequestParam("id") String id, final Model model) {
-        VOUuid voUuid = uuidService.getByUuid(id);
-        // TODO Lebeda - přesunout
-        model.addAllAttributes(browsePageService.tryDb(voUuid.getPath(), voUuid.getName()));
-        return "BrowsePage :: bookitem";
-    }
+//    @RequestMapping("/tryDb")
+//    public String tryDb(@RequestParam("id") String id, final Model model) {
+//        VOUuid voUuid = uuidService.getByUuid(id);
+//        // TODO Lebeda - přesunout
+//        model.addAllAttributes(browsePageService.tryDb(voUuid.getPath(), voUuid.getName()));
+//        return "BrowsePage :: bookitem";
+//    }
 
     @RequestMapping("/loadItem")
     public String loadItem(@RequestParam("id") String id, final Model model) {

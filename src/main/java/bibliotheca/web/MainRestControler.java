@@ -205,4 +205,16 @@ public class MainRestControler {
         }
     }
 
+    @RequestMapping("/tryDb")
+        public String tryDb(@RequestParam("id") String id) {
+        VOUuid voUuid = uuidService.getByUuid(id);
+        final boolean tryDb = browsePageService.tryDb(voUuid.getPath(), voUuid.getName());
+        if (tryDb) {
+            return "{\"tryDb\": 1}";
+
+        } else {
+            return "{\"tryDb\": 0}";
+        }
+    }
+
 }
