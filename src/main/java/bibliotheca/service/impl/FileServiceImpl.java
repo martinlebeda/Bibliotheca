@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -196,7 +193,7 @@ public class FileServiceImpl implements FileService {
 
     @SneakyThrows
     private VOFile getDocxFromDocFile(final List<VOFile> files) {
-        final VOFile srcFile;
+        VOFile srcFile = null;
         final VOFile doc = getTypeFile(files, "doc", false);
         if (doc != null) {
             final List<String> command = new ArrayList<>();
@@ -214,8 +211,13 @@ public class FileServiceImpl implements FileService {
         }
 
         // refresh
-        refreshFiles(files.get(0).getName(), new File(files.get(0).getPath()).getParentFile(), files);
-        srcFile = getTypeFile(files, "docx", false);
+        if (CollectionUtils.isNotEmpty(files)) {
+            final VOFile voFile = files.get(0);
+            if (voFile != null) {
+                refreshFiles(voFile.getName(), new File(voFile.getPath()).getParentFile(), files);
+                srcFile = getTypeFile(files, "docx", false);
+            }
+        }
         return srcFile;
     }
 
@@ -288,16 +290,21 @@ public class FileServiceImpl implements FileService {
                     }
                 }
 
-                if (entry != null) {
-                    InputStream is = zip.getInputStream(entry);
-
-                    String thumbnailName = Tools.getThumbnailName(file);
-                    IOUtils.copy(is, new FileOutputStream(thumbnailName));
-                    result = new VOFile(thumbnailName);
-                }
+                result = getVoFile(result, file, zip, entry);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+        return result;
+    }
+
+    private static VOFile getVoFile(VOFile result, File file, ZipFile zip, ZipEntry entry) throws IOException {
+        if (entry != null) {
+            InputStream is = zip.getInputStream(entry);
+
+            String thumbnailName = Tools.getThumbnailName(file);
+            IOUtils.copy(is, new FileOutputStream(thumbnailName));
+            result = new VOFile(thumbnailName);
         }
         return result;
     }
@@ -341,13 +348,7 @@ public class FileServiceImpl implements FileService {
                     entry = zip.getEntry("images/image1.jpg");
                 }
 
-                if (entry != null) {
-                    InputStream is = zip.getInputStream(entry);
-
-                    String thumbnailName = Tools.getThumbnailName(file);
-                    IOUtils.copy(is, new FileOutputStream(thumbnailName));
-                    result = new VOFile(thumbnailName);
-                }
+                result = getVoFile(result, file, zip, entry);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -372,13 +373,7 @@ public class FileServiceImpl implements FileService {
                     entry = zip.getEntry("word/media/image1.jpeg");
                 }
 
-                if (entry != null) {
-                    InputStream is = zip.getInputStream(entry);
-
-                    String thumbnailName = Tools.getThumbnailName(file);
-                    IOUtils.copy(is, new FileOutputStream(thumbnailName));
-                    result = new VOFile(thumbnailName);
-                }
+                result = getVoFile(result, file, zip, entry);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

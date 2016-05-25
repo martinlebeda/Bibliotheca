@@ -1,11 +1,14 @@
 package bibliotheca.model;
 
+import lombok.Data;
+
 import java.io.File;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 20.12.15
  */
+@Data
 public class VODirData {
     private String path;
     private String title;
@@ -15,11 +18,4 @@ public class VODirData {
         this.title = file.getName();
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public String getTitle() {
-        return title;
-    }
 }

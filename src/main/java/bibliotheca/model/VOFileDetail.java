@@ -2,6 +2,7 @@ package bibliotheca.model;
 
 import bibliotheca.config.VODevice;
 import bibliotheca.tools.Tools;
+import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import java.util.*;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
+@Data
 public class VOFileDetail {
     private String bookFileName;
     private String cover;
@@ -36,7 +38,6 @@ public class VOFileDetail {
 
     private String hodnoceniDbProcento;
     private String hodnoceniDbPocet;
-//    private final int hodnoceni;
 
     private String uuid;
     private boolean dirty = false;
@@ -63,18 +64,6 @@ public class VOFileDetail {
         this.authors.addAll(CollectionUtils.emptyIfNull((List <String>) metadata.get(Tools.METADATA_KEY_AUTHORS)));
     }
 
-    public void setBookFileName(String bookFileName) {
-        this.bookFileName = bookFileName;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public boolean isDirty() {
-        return dirty;
-    }
-
     public Map<String, Object> getMetadata() {
         Map<String, Object> meta = new HashMap<>();
 
@@ -87,22 +76,6 @@ public class VOFileDetail {
         return meta;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
     @SneakyThrows
     public String getEncodedName() {
         return URLEncoder.encode(getBookFileName(), "UTF-8");
@@ -113,66 +86,6 @@ public class VOFileDetail {
             this.dbknihUrl = dbknihUrl;
             this.dirty = true;
         }
-    }
-
-    public void setCover(String cover) {
-        this.cover = cover;
-    }
-
-    public List<String> getTargets() {
-        return targets;
-    }
-
-    public List<VODevice> getDevices() {
-        return devices;
-    }
-
-    public String getDesc() {
-        return desc;
-    }
-
-    public String getCover() {
-        return cover;
-    }
-
-    public List<VOFile> getFiles() {
-        return files;
-    }
-
-    public String getBookFileName() {
-        return bookFileName;
-    }
-
-    public void setTidyUp(final boolean tidyUp) {
-        this.tidyUp = tidyUp;
-    }
-
-    public boolean isTidyUp() {
-        return tidyUp;
-    }
-
-    public void setTargetPath(final String targetPath) {
-        this.targetPath = targetPath;
-    }
-
-    public String getTargetPath() {
-        return targetPath;
-    }
-
-    public void setAuthor(final String author) {
-        this.author = author;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-//    public boolean getCoverExists() {
-//        return StringUtils.isNotBlank(cover);
-//    }
-
-    public String getDbknihUrl() {
-        return dbknihUrl;
     }
 
     public boolean getDbknihUrlExists() {

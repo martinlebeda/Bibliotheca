@@ -1,5 +1,6 @@
 package bibliotheca.model;
 
+import lombok.Data;
 import org.apache.commons.io.FilenameUtils;
 
 
@@ -7,6 +8,7 @@ import org.apache.commons.io.FilenameUtils;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
+@Data
 public class VOFile {
     private final String name;
     private final String path;
@@ -23,17 +25,5 @@ public class VOFile {
         this.path = path;
         this.ext = FilenameUtils.getExtension(path);
         this.name = FilenameUtils.getName(path);
-    }
-
-    public String getExt() {
-        return ext;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPath() {
-        return path;
     }
 }

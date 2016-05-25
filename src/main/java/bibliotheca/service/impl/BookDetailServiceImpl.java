@@ -3,7 +3,6 @@ package bibliotheca.service.impl;
 import bibliotheca.config.ConfigService;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
-import bibliotheca.model.VOPath;
 import bibliotheca.service.BookDetailService;
 import bibliotheca.service.DataBaseKnihService;
 import bibliotheca.service.FileService;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +60,7 @@ public class BookDetailServiceImpl implements BookDetailService {
                 .filter(File::isFile)
                 .filter(object -> StringUtils.startsWith(object.getName(), key))
                 .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
-                .map(f -> new VOPath(f.getName(), f.getAbsolutePath()))
+//                .map(f -> new VOPath(f.getName(), f.getAbsolutePath()))
                 .map(p -> new VOFile(FilenameUtils.getExtension(p.getPath()), p.getName(), p.getPath()))
                 .collect(Collectors.toList());
 
@@ -75,10 +75,11 @@ public class BookDetailServiceImpl implements BookDetailService {
         final VOFile voFile = fileService.getCover(voFileList);
         String cover = "";
         //noinspection ConstantConditions
+
         String nocovername = Paths.get(
-                FilenameUtils.getFullPathNoEndSeparator(voFileList.get(0).getPath()),
-                key + "." + Tools.NOCOVER
+                FilenameUtils.getFullPathNoEndSeparator(voFileList.get(0).getPath()), key + "." + Tools.NOCOVER
         ).toString();
+
         final Path noCoverPath = Paths.get(nocovername);
         if (voFile != null) {
             cover = voFile.getPath();
@@ -87,9 +88,13 @@ public class BookDetailServiceImpl implements BookDetailService {
             }
         } else {
             if (!Files.exists(noCoverPath)) {
+                try {
                     FileOutputStream fos = new FileOutputStream(nocovername);
                     fos.write("no cover".getBytes());
                     fos.close();
+                } catch (IOException e) {
+                    // nothing
+                }
             }
         }
 

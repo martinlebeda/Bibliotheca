@@ -1,11 +1,14 @@
 package bibliotheca.model;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 4.12.15
  */
+@Data
 public class VOUuid {
     private String uuid;
     private String path;
@@ -18,19 +21,4 @@ public class VOUuid {
         this.uuid = uuid;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public Date getCached() {
-        return cached;
-    }
 }
