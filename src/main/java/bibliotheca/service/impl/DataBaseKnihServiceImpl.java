@@ -4,6 +4,7 @@ import bibliotheca.model.*;
 import bibliotheca.service.BrowsePageService;
 import bibliotheca.service.DataBaseKnihService;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.jsoup.Jsoup;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 import java.io.File;
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.*;
@@ -137,17 +137,14 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
 
 
     @Override
+    @SneakyThrows
     public Document getDocument(String url) {
         if (cacheDoc.containsKey(url)) {
             return cacheDoc.get(url);
         } else {
-            try {
-                Document doc = Jsoup.connect(url).timeout(CONNECT_TIMEOUT_MILLIS).get();
-                cacheDoc.put(url, doc);
-                return doc;
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+            Document doc = Jsoup.connect(url).timeout(CONNECT_TIMEOUT_MILLIS).get();
+            cacheDoc.put(url, doc);
+            return doc;
         }
     }
 
@@ -252,48 +249,41 @@ public class DataBaseKnihServiceImpl implements DataBaseKnihService {
     }
 
     @Override
+    @SneakyThrows
     public List<VOChoose> getChooseDbModalList(String bookname) {
-        try {
-            Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").timeout(CONNECT_TIMEOUT_MILLIS).get();
+        Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").timeout(CONNECT_TIMEOUT_MILLIS).get();
 
-            Elements elements = doc.select("#left_less > p.new_search");
+        Elements elements = doc.select("#left_less > p.new_search");
 //            elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong");
-            return elements.stream()
-                    .map(element -> new VOChoose(
-                            element.select("img").attr("src"),
-                            "http://www.databazeknih.cz/" + element.select("a.search_to_stats").attr("href"),
-                            element.select("a.search_to_stats").text(),
-                            element.select(".smallfind").text()))
-                    .sorted((o1, o2) -> new CompareToBuilder()
-                            .append(o1.getAuthorSurrname(), o2.getAuthorSurrname())
-                            .append(o1.getAuthorFirstname(), o2.getAuthorFirstname())
-                            .append(o1.getTitle(), o2.getTitle())
-                            .toComparison())
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        return elements.stream()
+                .map(element -> new VOChoose(
+                        element.select("img").attr("src"),
+                        "http://www.databazeknih.cz/" + element.select("a.search_to_stats").attr("href"),
+                        element.select("a.search_to_stats").text(),
+                        element.select(".smallfind").text()))
+                .sorted((o1, o2) -> new CompareToBuilder()
+                        .append(o1.getAuthorSurrname(), o2.getAuthorSurrname())
+                        .append(o1.getAuthorFirstname(), o2.getAuthorFirstname())
+                        .append(o1.getTitle(), o2.getTitle())
+                        .toComparison())
+                .collect(Collectors.toList());
     }
 
     @Override
+    @SneakyThrows
     public String getAutomaticDBKnihUrl(String bookname) {
         String dbknih = "";
-        try {
+        Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").timeout(DataBaseKnihService.CONNECT_TIMEOUT_MILLIS).get();
 
-            Document doc = Jsoup.connect("http://www.databazeknih.cz/search?q=" + URLEncoder.encode(bookname) + "&hledat=&stranka=search").timeout(DataBaseKnihService.CONNECT_TIMEOUT_MILLIS).get();
+        Elements elements;
+        elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong");
 
-            Elements elements;
-            elements = doc.select("#left_less > p.new_search > a.search_to_stats.strong");
-
-            if (elements.size() == 1) {
-                for (Element element : elements) {
-                    dbknih = "http://www.databazeknih.cz/" + element.attr("href");
-                }
+        if (elements.size() == 1) {
+            for (Element element : elements) {
+                dbknih = "http://www.databazeknih.cz/" + element.attr("href");
             }
-
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
         }
+
         return dbknih;
     }
 }

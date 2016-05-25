@@ -6,6 +6,7 @@ import bibliotheca.model.VOPath;
 import bibliotheca.service.BookDetailService;
 import bibliotheca.service.FileService;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -99,6 +100,7 @@ public class FileServiceImpl implements FileService {
         return voFile;
     }
 
+    @SneakyThrows
     private void generateFile(final List<VOFile> files, final String suffix) {
         VOFile srcFile = getTypeFile(files, "htmlz", false);
         if (srcFile == null) {
@@ -140,82 +142,75 @@ public class FileServiceImpl implements FileService {
 
         if (srcFile != null) {
             // generate
-            try {
-                String author = null;
-                String title = null;
-                String cover = null;
+            String author = null;
+            String title = null;
+            String cover = null;
 
-                final String[] split = StringUtils.split(FilenameUtils.getBaseName(srcFile.getName()), "-", 2);
-                if (split.length > 1) {
-                    author = StringUtils.trim(split[0]);
-                    title = StringUtils.trim(split[1]);
-                } else {
-                    title = srcFile.getName();
-                }
+            final String[] split = StringUtils.split(FilenameUtils.getBaseName(srcFile.getName()), "-", 2);
+            if (split.length > 1) {
+                author = StringUtils.trim(split[0]);
+                title = StringUtils.trim(split[1]);
+            } else {
+                title = srcFile.getName();
+            }
 
-                VOFile coverFile = getTypeFile(files, "jpg", false);
-                if (coverFile != null) {
-                    cover = coverFile.getPath();
-                }
+            VOFile coverFile = getTypeFile(files, "jpg", false);
+            if (coverFile != null) {
+                cover = coverFile.getPath();
+            }
 
-                final List<String> command = new ArrayList<>();
-                command.add(configService.getConfig().getConvert());
-                command.add(srcFile.getPath());
-                command.add("." + suffix);
+            final List<String> command = new ArrayList<>();
+            command.add(configService.getConfig().getConvert());
+            command.add(srcFile.getPath());
+            command.add("." + suffix);
 
-                if (srcFile.getPath().toLowerCase().endsWith(".pdb")
-                        || srcFile.getPath().toLowerCase().endsWith(".txt")) {
-                    command.add("--input-encoding=cp1250 ");
-                }
+            if (srcFile.getPath().toLowerCase().endsWith(".pdb")
+                    || srcFile.getPath().toLowerCase().endsWith(".txt")) {
+                command.add("--input-encoding=cp1250 ");
+            }
 
-                if (StringUtils.isNotBlank(cover)) {
-                    command.add("--cover");
-                    command.add(cover);
-                }
+            if (StringUtils.isNotBlank(cover)) {
+                command.add("--cover");
+                command.add(cover);
+            }
 
-                if (StringUtils.isNotBlank(author)) {
-                    command.add("--authors");
-                    command.add(author);
-                }
+            if (StringUtils.isNotBlank(author)) {
+                command.add("--authors");
+                command.add(author);
+            }
 
-                if (StringUtils.isNotBlank(title)) {
-                    command.add("--title");
-                    command.add(title);
-                }
+            if (StringUtils.isNotBlank(title)) {
+                command.add("--title");
+                command.add(title);
+            }
 
-                ProcessBuilder builder = new ProcessBuilder(command);
-                builder.directory(new File(srcFile.getPath()).getParentFile());
-                final Process process = builder.start();
-                process.waitFor();
+            ProcessBuilder builder = new ProcessBuilder(command);
+            builder.directory(new File(srcFile.getPath()).getParentFile());
+            final Process process = builder.start();
+            process.waitFor();
 
                 //            //~/bin/fixEpubJustify.sh "$TGT" && \
                 //            //~/bin/fixEpubFont.sh "$TGT"
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
         }
     }
 
+    @SneakyThrows
     private VOFile getDocxFromDocFile(final List<VOFile> files) {
         final VOFile srcFile;
         final VOFile doc = getTypeFile(files, "doc", false);
         if (doc != null) {
-            try {
-                final List<String> command = new ArrayList<>();
-                command.add(configService.getConfig().getLibreoffice());
-                command.add("--headless");
-                command.add("--convert-to");
-                command.add("docx");
-                command.add(doc.getPath());
+            final List<String> command = new ArrayList<>();
+            command.add(configService.getConfig().getLibreoffice());
+            command.add("--headless");
+            command.add("--convert-to");
+            command.add("docx");
+            command.add(doc.getPath());
 
-                ProcessBuilder builder = new ProcessBuilder(command);
-                builder.directory(new File(doc.getPath()).getParentFile());
-                final Process process;
-                process = builder.start();
-                process.waitFor();
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
+            ProcessBuilder builder = new ProcessBuilder(command);
+            builder.directory(new File(doc.getPath()).getParentFile());
+            final Process process;
+            process = builder.start();
+            process.waitFor();
         }
 
         // refresh
@@ -392,35 +387,32 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    @SneakyThrows
     public void tidyUp(final File fileFrom, final File tgtFile) {
-        try {
-            if (tgtFile.exists()) {
-                String sha1Src = DigestUtils.sha1Hex(new FileInputStream(fileFrom));
-                String sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile));
+        if (tgtFile.exists()) {
+            String sha1Src = DigestUtils.sha1Hex(new FileInputStream(fileFrom));
+            String sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile));
 
-                if ((sha1Src.equals(sha1Tgt)
-                        || fileFrom.getName().endsWith("uuid"))
-                        || fileFrom.getName().endsWith("yaml")
-                        || fileFrom.getName().endsWith("mkd")
-                        || fileFrom.getName().endsWith("jpg")
-                        || fileFrom.getName().endsWith("yaml")
-                        ) {
-                    //noinspection ResultOfMethodCallIgnored
-                    fileFrom.delete();
-                } else {
-                    String pattern = "yyyyMMdd";
-                    SimpleDateFormat format = new SimpleDateFormat(pattern);
-                    String newFileName = FilenameUtils.getBaseName(fileFrom.getName()) + ".bak"
-                            + format.format(new Date(fileFrom.lastModified()))
-                            + "." + FilenameUtils.getExtension(fileFrom.getName());
-                    Path tgtFileNahr = Paths.get(tgtFile.getParent(), newFileName);
-                    FileUtils.moveFile(fileFrom, tgtFileNahr.toFile());
-                }
+            if ((sha1Src.equals(sha1Tgt)
+                    || fileFrom.getName().endsWith("uuid"))
+                    || fileFrom.getName().endsWith("yaml")
+                    || fileFrom.getName().endsWith("mkd")
+                    || fileFrom.getName().endsWith("jpg")
+                    || fileFrom.getName().endsWith("yaml")
+                    ) {
+                //noinspection ResultOfMethodCallIgnored
+                fileFrom.delete();
             } else {
-                FileUtils.moveFile(fileFrom, tgtFile);
+                String pattern = "yyyyMMdd";
+                SimpleDateFormat format = new SimpleDateFormat(pattern);
+                String newFileName = FilenameUtils.getBaseName(fileFrom.getName()) + ".bak"
+                        + format.format(new Date(fileFrom.lastModified()))
+                        + "." + FilenameUtils.getExtension(fileFrom.getName());
+                Path tgtFileNahr = Paths.get(tgtFile.getParent(), newFileName);
+                FileUtils.moveFile(fileFrom, tgtFileNahr.toFile());
             }
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
+        } else {
+            FileUtils.moveFile(fileFrom, tgtFile);
         }
     }
 

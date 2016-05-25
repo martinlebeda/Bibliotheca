@@ -2,10 +2,10 @@ package bibliotheca.model;
 
 import bibliotheca.config.VODevice;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -103,13 +103,10 @@ public class VOFileDetail {
         this.desc = desc;
     }
 
+    @SneakyThrows
     public String getEncodedName() {
-        try {
-            return URLEncoder.encode(getBookFileName(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
-    };
+        return URLEncoder.encode(getBookFileName(), "UTF-8");
+    }
 
     public void setDbknihUrl(String dbknihUrl) {
         if (!StringUtils.equals(this.dbknihUrl, dbknihUrl)) {

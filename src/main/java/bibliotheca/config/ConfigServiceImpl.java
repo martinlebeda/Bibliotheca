@@ -1,5 +1,6 @@
 package bibliotheca.config;
 
+import lombok.SneakyThrows;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.stereotype.Service;
@@ -20,17 +21,14 @@ public class ConfigServiceImpl implements ConfigService {
     private VOConfig config = null;
 
     @Override
+    @SneakyThrows
     public VOConfig getConfig() {
         if (config == null) {
             String homeDir = System.getProperty("user.home");
             final File configFile = Paths.get(homeDir, CONFIG_FILE).toFile();
 
             Serializer serializer = new Persister();
-            try {
-                config = serializer.read(VOConfig.class, configFile);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
+            config = serializer.read(VOConfig.class, configFile);
         }
 
         return config;

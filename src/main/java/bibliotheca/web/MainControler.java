@@ -7,6 +7,7 @@ import bibliotheca.model.VOPath;
 import bibliotheca.model.VOUuid;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -135,6 +135,7 @@ public class MainControler {
     }
 
     @RequestMapping("/toReader")
+    @SneakyThrows
     public String toReader(@RequestParam("id") String id,
                            @RequestParam("devFormat") String devFormat,
                            @RequestParam("devPath") String devicePath,
@@ -147,12 +148,7 @@ public class MainControler {
 
             final VOFile voFile = fileService.getTypeFile(fileList, devFormat, true);
             if (voFile != null) {
-                try {
-                    FileUtils.copyFileToDirectory(new File(voFile.getPath()), new File(devicePath));
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
-
-                }
+                FileUtils.copyFileToDirectory(new File(voFile.getPath()), new File(devicePath));
             }
         }
 

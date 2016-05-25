@@ -5,6 +5,7 @@ import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOUuid;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -21,7 +22,10 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,22 +58,20 @@ public class MainRestControler {
 
 
     @RequestMapping("/cover")
+    @SneakyThrows
     public byte[] cover(@RequestParam("path") String path) {
         File file = new File(path);
-        try {
-            BufferedImage image = ImageIO.read(file);
-            BufferedImage thumbnail = Scalr.resize(image, Tools.THUMBNAIL_SIZE);
-            final ByteArrayOutputStream output = new ByteArrayOutputStream();
-            ImageIO.write(thumbnail, "jpg", output);
-            return output.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        BufferedImage image = ImageIO.read(file);
+        BufferedImage thumbnail = Scalr.resize(image, Tools.THUMBNAIL_SIZE);
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ImageIO.write(thumbnail, "jpg", output);
+        return output.toByteArray();
     }
 
     //    @RequestMapping("/view/**{variable:.+}")
 //    public byte[] view(@PathVariable String variable, HttpServletRequest request) {
     @RequestMapping("/view/**")
+    @SneakyThrows
     public byte[] view(HttpServletRequest request) {
         String restOfTheUrl = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String splat = restOfTheUrl.replaceFirst("/view/", "").replaceAll("\\+", " ");
@@ -86,15 +88,11 @@ public class MainRestControler {
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         if (voFile != null) {
-            try {
-                ZipFile zip = new ZipFile(baseFile);
-                ZipEntry entry = zip.getEntry(fileName);
-                if (entry != null) {
-                    InputStream is = zip.getInputStream(entry);
-                    IOUtils.copy(is, output);
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
+            ZipFile zip = new ZipFile(baseFile);
+            ZipEntry entry = zip.getEntry(fileName);
+            if (entry != null) {
+                InputStream is = zip.getInputStream(entry);
+                IOUtils.copy(is, output);
             }
         }
 
@@ -102,20 +100,14 @@ public class MainRestControler {
     }
 
     @RequestMapping("/download")
-    public
-    @ResponseBody
-    void download(@RequestParam("path") String path, HttpServletResponse response) {
-        try {
-            File file = new File(path);
+    @SneakyThrows
+    public @ResponseBody void download(@RequestParam("path") String path, HttpServletResponse response) {
+        File file = new File(path);
 
-            response.setContentType("application/octet-stream");
-            response.setContentLength((new Long(file.length()).intValue()));
-            response.setHeader("content-Disposition", "attachment; filename=\"" + StringUtils.stripAccents(file.getName()) + "\"");// "attachment;filename=test.xls"
-            IOUtils.copyLarge(new FileInputStream(file), response.getOutputStream());
-
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        response.setContentType("application/octet-stream");
+        response.setContentLength((new Long(file.length()).intValue()));
+        response.setHeader("content-Disposition", "attachment; filename=\"" + StringUtils.stripAccents(file.getName()) + "\"");// "attachment;filename=test.xls"
+        IOUtils.copyLarge(new FileInputStream(file), response.getOutputStream());
     }
 
     /**
@@ -186,6 +178,7 @@ public class MainRestControler {
     }
 
     @RequestMapping("/joinToDir")
+    @SneakyThrows
     public void joinToDir(@RequestParam("srcPath") String srcPath, @RequestParam("tgtPath") String tgtPath) {
         File srcFile = new File(srcPath);
 
@@ -198,11 +191,7 @@ public class MainRestControler {
                     fileService.tidyUp(file, tgt);
                 });
 
-        try {
-            FileUtils.deleteDirectory(srcFile);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        FileUtils.deleteDirectory(srcFile);
     }
 
     @RequestMapping("/tryDb")

@@ -2,6 +2,7 @@ package bibliotheca.tools;
 
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOPath;
+import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -65,6 +66,7 @@ public class Tools {
      * @param path path of browse page
      * @return base of model for render page
      */
+    @SneakyThrows
     public static HashMap<String, Object> getDefaultModel(final String title, String path) {
         final HashMap<String, Object> model = new HashMap<>();
         model.put("title", title);
@@ -72,11 +74,7 @@ public class Tools {
 
         if (StringUtils.isNotBlank(path)) {
             model.put(Tools.PARAM_PATH, path);
-            try {
-                model.put("encodedPath", URLEncoder.encode(path, "UTF-8").replaceAll("%2F", "/"));
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException(e);
-            }
+            model.put("encodedPath", URLEncoder.encode(path, "UTF-8").replaceAll("%2F", "/"));
         }
 
         return model;
@@ -86,80 +84,69 @@ public class Tools {
         return file.getParent() + File.separator + FilenameUtils.getBaseName(file.getAbsolutePath()) + ".jpg";
     }
 
+    @SneakyThrows
     public static File renameDirectory(final File file, final String frmName) {
         final File newPath;
-        try {
-            newPath = Paths.get(file.getParentFile().getAbsolutePath(), frmName).toFile();
-            if (newPath.exists()) {
-                // move content and delete
-                final File[] files = file.listFiles();
-                if (ArrayUtils.isNotEmpty(files)) {
-                    Arrays.stream(files).forEach(srcFile -> {
-                                try {
-                                    File tgtFile = Paths.get(newPath.getAbsolutePath(), srcFile.getName()).toFile();
-                                    if (!tgtFile.exists()) {
-                                        FileUtils.moveToDirectory(srcFile, newPath, false);
-                                    } else {
-                                        String sha1Src = DigestUtils.sha1Hex(new FileInputStream(srcFile));
-                                        String sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile));
-
-                                        if (!sha1Src.equals(sha1Tgt)) {
-                                            FileUtils.copyFile(srcFile,
-                                                    Paths.get(newPath.getAbsolutePath(),
-                                                            sha1Src + "_" + srcFile.getName()).toFile());
-                                        }
-                                        //noinspection ResultOfMethodCallIgnored
-                                        srcFile.delete();
-
-                                    }
-                                } catch (Exception e) {
-                                    throw new IllegalStateException(e);
-                                }
-                            }
-                    );
-                }
-                FileUtils.deleteDirectory(file);
-            } else {
-                FileUtils.moveDirectory(file, newPath);
+        newPath = Paths.get(file.getParentFile().getAbsolutePath(), frmName).toFile();
+        if (newPath.exists()) {
+            // move content and delete
+            final File[] files = file.listFiles();
+            if (ArrayUtils.isNotEmpty(files)) {
+                Arrays.stream(files).forEach(srcFile -> moveFileToNewPath(newPath, srcFile));
             }
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
+            FileUtils.deleteDirectory(file);
+        } else {
+            FileUtils.moveDirectory(file, newPath);
         }
         return newPath;
     }
 
+    @SneakyThrows
+    private static void moveFileToNewPath(File newPath, File srcFile) {
+        File tgtFile = Paths.get(newPath.getAbsolutePath(), srcFile.getName()).toFile();
+        if (!tgtFile.exists()) {
+            FileUtils.moveToDirectory(srcFile, newPath, false);
+        } else {
+            String sha1Src = DigestUtils.sha1Hex(new FileInputStream(srcFile));
+            String sha1Tgt = DigestUtils.sha1Hex(new FileInputStream(tgtFile));
+
+            if (!sha1Src.equals(sha1Tgt)) {
+                FileUtils.copyFile(srcFile,
+                        Paths.get(newPath.getAbsolutePath(),
+                                sha1Src + "_" + srcFile.getName()).toFile());
+            }
+            //noinspection ResultOfMethodCallIgnored
+            srcFile.delete();
+
+        }
+    }
+
+    @SneakyThrows
     public static String writeDescription(final String path, String name, final String frmDescription) {
         String baseFileName = Paths.get(path, name).toString();
         final String desc;
-        try {
-            final File readme = new File(baseFileName + ".mkd");
-            final FileOutputStream outputStream = new FileOutputStream(readme);
-            IOUtils.write(frmDescription, outputStream);
-            outputStream.close();
-            desc = frmDescription;
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        final File readme = new File(baseFileName + ".mkd");
+        final FileOutputStream outputStream = new FileOutputStream(readme);
+        IOUtils.write(frmDescription, outputStream);
+        outputStream.close();
+        desc = frmDescription;
         return desc;
     }
 
+    @SneakyThrows
     public static VOFile downloadCover(final String baseFileName, final String frmCover) {
         final VOFile cover;
-        try {
-            URL website = new URL(frmCover);
-            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-            String covername = baseFileName + ".jpg";
-            FileOutputStream fos = new FileOutputStream(covername);
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-            fos.close();
-            cover = new VOFile(covername);
+        URL website = new URL(frmCover);
+        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+        String covername = baseFileName + ".jpg";
+        FileOutputStream fos = new FileOutputStream(covername);
+        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        fos.close();
+        cover = new VOFile(covername);
 
-            File nocoverfile = new File(baseFileName + ".nocover");
-            if (nocoverfile.exists()) {
-                nocoverfile.delete();
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
+        File nocoverfile = new File(baseFileName + ".nocover");
+        if (nocoverfile.exists()) {
+            nocoverfile.delete();
         }
         return cover;
     }
@@ -168,34 +155,32 @@ public class Tools {
         // rename all
         final String finalBasename = basename;
         Arrays.stream(listFiles).forEach(file1 -> {
-            try {
-                String path1 = file1.getAbsolutePath();
-                String path2 = file1.getAbsolutePath().replace(finalBasename, frmName);
-                final File srcFile = new File(path1);
-                final File destFile = new File(path2);
-                if (destFile.exists()) {
-                    final String s = destFile.getAbsolutePath() + "." + DigestUtils.sha1Hex(new FileInputStream(destFile));
-                    destFile.renameTo(new File(s));
-                }
-                FileUtils.moveFile(srcFile, destFile);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
+            renameFile(frmName, finalBasename, file1);
         });
     }
 
+    @SneakyThrows
+    private static void renameFile(String frmName, String finalBasename, File file1) {
+        String path1 = file1.getAbsolutePath();
+        String path2 = file1.getAbsolutePath().replace(finalBasename, frmName);
+        final File srcFile = new File(path1);
+        final File destFile = new File(path2);
+        if (destFile.exists()) {
+            final String s = destFile.getAbsolutePath() + "." + DigestUtils.sha1Hex(new FileInputStream(destFile));
+            destFile.renameTo(new File(s));
+        }
+        FileUtils.moveFile(srcFile, destFile);
+    }
+
+    @SneakyThrows
     public static Map<String, Object> loadMetaData(String path, String basename) {
-        try {
-            final File file = Paths.get(path, basename + ".yaml").toFile();
-            if (file.exists()) {
-                InputStream input = new FileInputStream(file);
-                Yaml yaml = new Yaml();
-                return (Map<String, Object>) yaml.load(input);
-            } else {
-                return new HashMap<>();
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+        final File file = Paths.get(path, basename + ".yaml").toFile();
+        if (file.exists()) {
+            InputStream input = new FileInputStream(file);
+            Yaml yaml = new Yaml();
+            return (Map<String, Object>) yaml.load(input);
+        } else {
+            return new HashMap<>();
         }
     }
 
@@ -208,14 +193,11 @@ public class Tools {
     }
 
 
+    @SneakyThrows
     public static void writeMetaData(String path, String basename, Map<String, Object> metadata) {
-        try {
-            Yaml yaml = new Yaml();
-            Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
-            yaml.dump(metadata, writer);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        Yaml yaml = new Yaml();
+        Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
+        yaml.dump(metadata, writer);
     }
 
     // TODO - JavaDoc - Lebeda

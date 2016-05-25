@@ -9,6 +9,7 @@ import bibliotheca.service.DataBaseKnihService;
 import bibliotheca.service.FileService;
 import bibliotheca.service.UuidService;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,6 +68,7 @@ public class BookDetailServiceImpl implements BookDetailService {
     }
 
     @Override
+    @SneakyThrows
     public VOFileDetail getVoFileDetail(String path, String key, List<VOFile> voFileList) {
         final String uuid = uuidService.getUuid(path, key);
 
@@ -82,21 +83,13 @@ public class BookDetailServiceImpl implements BookDetailService {
         if (voFile != null) {
             cover = voFile.getPath();
             if (Files.exists(noCoverPath)) {
-                try {
-                    Files.delete(noCoverPath);
-                } catch (IOException e) {
-                    // nothing
-                }
+                Files.delete(noCoverPath);
             }
         } else {
             if (!Files.exists(noCoverPath)) {
-                try {
                     FileOutputStream fos = new FileOutputStream(nocovername);
                     fos.write("no cover".getBytes());
                     fos.close();
-                } catch (IOException e) {
-                    // nothing
-                }
             }
         }
 
@@ -192,20 +185,18 @@ public class BookDetailServiceImpl implements BookDetailService {
         return fileDetail;
     }
 
+    @SneakyThrows
     private String getDesc(final List<VOFile> files) {
         VOFile readme = fileService.getTypeFile(files, "mkd", false);
         final String html;
         if (readme != null) {
             final PegDownProcessor pdp = new PegDownProcessor();
             final File file = new File(readme.getPath());
-            try {
-                final FileInputStream input = new FileInputStream(file);
-                final List<String> strings = IOUtils.readLines(input);
-                final String join = StringUtils.join(strings, "\n");
-                html = pdp.markdownToHtml(join);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+
+            final FileInputStream input = new FileInputStream(file);
+            final List<String> strings = IOUtils.readLines(input);
+            final String join = StringUtils.join(strings, "\n");
+            html = pdp.markdownToHtml(join);
         } else {
             html = null;
         }

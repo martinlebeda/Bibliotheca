@@ -6,6 +6,7 @@ import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,16 +45,13 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     private UuidService uuidService;
 
     @Override
+    @SneakyThrows
     public Map<String, Object> getModel(String path, final String booksearch,  final String basename) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());
-        try {
-            model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
 
         fileService.fillNavigatorData(model, file, false);
 
@@ -206,16 +203,13 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     }
 
     @Override
+    @SneakyThrows
     public Map<String, Object> loadItemModel(String path, String name) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
         File file = new File(path);
         model.put(Tools.PARAM_PATH, file.getAbsolutePath());
-        try {
-            model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
 
         VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
         model.put("p", fd);

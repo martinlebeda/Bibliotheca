@@ -5,6 +5,7 @@ import bibliotheca.service.DataBaseKnihService;
 import bibliotheca.service.EditFilePageService;
 import bibliotheca.service.FileService;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -151,18 +151,15 @@ public class EditFilePageServiceImpl implements EditFilePageService {
         }
     }
 
+    @SneakyThrows
     private String getRawDesc(final List<VOFile> files) {
         VOFile readme = fileService.getTypeFile(files, "mkd", false);
         final String html;
         if (readme != null) {
             final File file = new File(readme.getPath());
-            try {
-                final FileInputStream input = new FileInputStream(file);
-                final List<String> strings = IOUtils.readLines(input);
-                html = StringUtils.join(strings, "\n");
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+            final FileInputStream input = new FileInputStream(file);
+            final List<String> strings = IOUtils.readLines(input);
+            html = StringUtils.join(strings, "\n");
         } else {
             html = null;
         }

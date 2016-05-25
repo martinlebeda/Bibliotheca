@@ -3,6 +3,7 @@ package bibliotheca.service.impl;
 import bibliotheca.model.VOUuid;
 import bibliotheca.service.UuidService;
 import bibliotheca.tools.Tools;
+import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,18 +28,15 @@ public class UuidServiceImpl implements UuidService {
     private Map<String, VOUuid> indexCache = new HashMap<>();
 
     @Override
+    @SneakyThrows
     public String getUuid(String path, String key) {
         // get or create uuid for book
         final String result;
         File file = Paths.get(path, key + ".uuid").toFile();
-        try {
-            if (file.exists()) {
-                result = IOUtils.readLines(new FileReader(file)).get(0);
-            } else {
-                result = createNewUUID(file);
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+        if (file.exists()) {
+            result = IOUtils.readLines(new FileReader(file)).get(0);
+        } else {
+            result = createNewUUID(file);
         }
 
         // store in cache
