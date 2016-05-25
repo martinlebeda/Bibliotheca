@@ -25,6 +25,8 @@ public class UuidServiceImpl implements UuidService {
     /**
      * Cache for books uuid
      */
+    // TODO Lebeda - reindex whole Store
+    // TODO Lebeda - pernament cache mapdb??
     private Map<String, VOUuid> indexCache = new HashMap<>();
 
     @Override
@@ -47,6 +49,7 @@ public class UuidServiceImpl implements UuidService {
 
     @Override
     public VOUuid getByUuid(String uuid) {
+        // TODO Lebeda - check existence value
         return indexCache.get(uuid);
     }
 

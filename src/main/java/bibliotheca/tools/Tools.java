@@ -9,6 +9,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -195,7 +196,11 @@ public class Tools {
 
     @SneakyThrows
     public static void writeMetaData(String path, String basename, Map<String, Object> metadata) {
-        Yaml yaml = new Yaml();
+        DumperOptions options = new DumperOptions();
+        options.setPrettyFlow(true);
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
+
+        Yaml yaml = new Yaml(options);
         Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
         yaml.dump(metadata, writer);
     }
