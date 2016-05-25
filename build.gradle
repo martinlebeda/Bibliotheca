@@ -61,6 +61,8 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
 //    compile("org.springframework.boot:spring-boot-starter-data-jpa")
 //    runtime("com.h2database:h2")
+    compile group: "com.google.code.gson", name: "gson", version: '2.6.2'
+    compile group: 'org.mapdb', name: 'mapdb', version: '3.0.0-M6'
 
     testCompile("org.springframework.boot:spring-boot-starter-test")
 

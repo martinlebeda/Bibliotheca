@@ -1,33 +1,61 @@
 package bibliotheca.service.impl;
 
+import bibliotheca.config.ConfigService;
 import bibliotheca.model.VOUuid;
 import bibliotheca.service.UuidService;
-import bibliotheca.tools.Tools;
+import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.mapdb.*;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 4.12.15
  */
 @Service
-public class UuidServiceImpl implements UuidService {
+public class UuidServiceImpl implements UuidService, DisposableBean {
 
+    @Autowired
+    private ConfigService configService;
     /**
      * Cache for books uuid
      */
     // TODO Lebeda - reindex whole Store
     // TODO Lebeda - pernament cache mapdb??
-    private Map<String, VOUuid> indexCache = new HashMap<>();
+    private Gson gson = new Gson();
+    private DB db;
+    private ConcurrentMap<String, VOUuid> indexCache;
+
+//    private Map<String, VOUuid> indexCache = new HashMap<>();
+
+    @PostConstruct
+    void init() {
+        db = DBMaker.fileDB(Paths.get(configService.getBibliothecaDir(),"indexCache.db").toString()).make();
+        indexCache = db.hashMap("indexCache", Serializer.STRING, new Serializer<VOUuid>() {
+                @Override
+                public void serialize(@NotNull DataOutput2 out, @NotNull VOUuid value) throws IOException {
+                    out.writeChars(gson.toJson(value));
+                }
+
+                @Override
+                public VOUuid deserialize(@NotNull DataInput2 input, int available) throws IOException {
+                    return gson.fromJson(input.readLine(), VOUuid.class);
+                }
+            }).createOrOpen();
+    }
 
     @Override
     @SneakyThrows
@@ -78,15 +106,20 @@ public class UuidServiceImpl implements UuidService {
      * Periodicaly cleaning cache from old records.
      * Remove from map records older then Tools.CLEAR_CACHE_DELAY.
      */
-    @Scheduled(fixedDelay = Tools.CLEAR_CACHE_DELAY)
-    public void clearCache() {
-        List<VOUuid> tmpVoUuidList = new ArrayList<>(indexCache.values());
-        tmpVoUuidList.forEach(voUuid -> {
-            long distance = (new Date()).getTime() - voUuid.getCached().getTime();
-            if (distance > Tools.CLEAR_CACHE_DELAY) {
-                indexCache.remove(voUuid.getUuid());
-            }
-        });
-    }
+    // TODO Lebeda - refresh cache
+//    @Scheduled(fixedDelay = Tools.CLEAR_CACHE_DELAY)
+//    public void clearCache() {
+//        List<VOUuid> tmpVoUuidList = new ArrayList<>(indexCache.values());
+//        tmpVoUuidList.forEach(voUuid -> {
+//            long distance = (new Date()).getTime() - voUuid.getCached().getTime();
+//            if (distance > Tools.CLEAR_CACHE_DELAY) {
+//                indexCache.remove(voUuid.getUuid());
+//            }
+//        });
+//    }
 
+    @Override
+    public void destroy() throws Exception {
+        db.close();
+    }
 }

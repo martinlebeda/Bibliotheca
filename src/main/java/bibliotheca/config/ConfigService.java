@@ -13,4 +13,7 @@ public interface ConfigService {
      * @return configuration object
      */
     VOConfig getConfig();
+
+    // TODO - JavaDoc - Lebeda
+    String getBibliothecaDir();
 }
