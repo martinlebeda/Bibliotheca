@@ -1,18 +1,20 @@
-package bibliotheca.model;
+package bibliotheca.model
 
-import lombok.Data;
-import org.apache.commons.io.FilenameUtils;
-
-
+import groovy.transform.EqualsAndHashCode
+import groovy.transform.ToString
+import org.apache.commons.io.FilenameUtils
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
-@Data
+// TODO Lebeda - move to groovy
+
+@ToString
+@EqualsAndHashCode
 public class VOFile {
-    private final String name;
-    private final String path;
-    private final String ext;
+    final String name;
+    final String path;
+    final String ext;
 
 
     public VOFile(final String ext, final String name, final String path) {

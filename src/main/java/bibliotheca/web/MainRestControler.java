@@ -3,7 +3,10 @@ package bibliotheca.web;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOUuid;
-import bibliotheca.service.*;
+import bibliotheca.service.BookDetailService;
+import bibliotheca.service.BrowsePageService;
+import bibliotheca.service.DataBaseKnihService;
+import bibliotheca.service.FileService;
 import bibliotheca.tools.Tools;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
+import bibliotheca.service.UuidService;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -152,8 +156,7 @@ public class MainRestControler {
 
     @RequestMapping("/refreshIndex")
     public void refreshIndex() {
-        // TODO Lebeda - zavolat refresh indexu uuid
-        System.out.println("refresh index");
+        uuidService.refreshUuids();
     }
 
     @RequestMapping("/joinTo")

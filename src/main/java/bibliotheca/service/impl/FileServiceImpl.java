@@ -5,7 +5,6 @@ import bibliotheca.model.VOFile;
 import bibliotheca.model.VOPath;
 import bibliotheca.service.BookDetailService;
 import bibliotheca.service.FileService;
-import bibliotheca.service.UuidService;
 import bibliotheca.tools.Tools;
 import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -18,6 +17,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import bibliotheca.service.UuidService;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -399,11 +399,11 @@ public class FileServiceImpl implements FileService {
                     || fileFrom.getName().endsWith("yaml")
                     ) {
                 //noinspection ResultOfMethodCallIgnored
-                fileFrom.delete();
                 if (fileFrom.getName().endsWith("uuid")) {
                     final String id = uuidService.getUuid(fileFrom.getParent(), FilenameUtils.getBaseName(fileFrom.getName()));
                     uuidService.removeFromCache(id);
                 }
+                fileFrom.delete();
             } else {
                 String pattern = "yyyyMMdd";
                 SimpleDateFormat format = new SimpleDateFormat(pattern);
@@ -416,8 +416,8 @@ public class FileServiceImpl implements FileService {
         } else {
             FileUtils.moveFile(fileFrom, tgtFile);
             if (fileFrom.getName().endsWith("uuid")) {
-                final String id = uuidService.getUuid(fileFrom.getParent(), FilenameUtils.getBaseName(fileFrom.getName()));
-                uuidService.removeFromCache(id);
+//                final String id = uuidService.getUuid(tgtFile.getParent(), FilenameUtils.getBaseName(tgtFile.getName()));
+//                uuidService.removeFromCache(id);
                 uuidService.getUuid(tgtFile.getParent(), FilenameUtils.getBaseName(tgtFile.getName()));
             }
         }

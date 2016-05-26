@@ -1,13 +1,11 @@
-package bibliotheca.model;
-
-import java.io.File;
-
+package bibliotheca.model
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  *
  * @deprecated nahradit pomocí File
  */
+// TODO Lebeda - move to groovy
 // TODO Lebeda - smazat třídu
 @Deprecated
 public class VOPath {

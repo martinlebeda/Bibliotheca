@@ -10,16 +10,19 @@ buildscript {
         classpath("io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE")
         classpath "com.github.houbie:lesscss-gradle-plugin:1.0.3-less-1.7.0" // lesscss
         classpath 'net.researchgate:gradle-release:2.1.2' // release
+        classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3' // markdown
     }
 }
 
 apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'spring-boot' 
 apply plugin: 'io.spring.dependency-management' 
 apply plugin: "lesscss" // lesscss
 apply plugin: 'net.researchgate.release' // release
+apply plugin: 'ch.raffael.pegdown-doclet' // markdown
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -55,6 +58,9 @@ task localDeploy(dependsOn: build, type: Copy) {
 }
 
 dependencies {
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.6'
+    compile group: 'org.codehaus.gpars', name: 'gpars', version: '1.2.1'
+
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
     compile("org.springframework.boot:spring-boot-starter-freemarker")
 

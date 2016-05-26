@@ -1,19 +1,21 @@
-package bibliotheca.model;
+package bibliotheca.model
 
-import lombok.Data;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-
+import groovy.transform.EqualsAndHashCode
+import groovy.transform.ToString
+import org.apache.commons.lang3.ArrayUtils
+import org.apache.commons.lang3.StringUtils
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 7.12.15
  */
-@Data
+// TODO Lebeda - move to groovy
+@ToString
+@EqualsAndHashCode
 public class VOChoose {
-    private String urlimg;
-    private String url;
-    private String title;
-    private String other;
+    String urlimg;
+    String url;
+    String title;
+    String other;
 
     public VOChoose(String urlimg, String url, String title, String other) {
         this.other = other;

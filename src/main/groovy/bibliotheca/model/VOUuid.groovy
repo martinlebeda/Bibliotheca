@@ -1,21 +1,19 @@
-package bibliotheca.model;
+package bibliotheca.model
 
-import lombok.Data;
-
+import groovy.transform.Canonical
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 4.12.15
  */
-@Data
+// TODO Lebeda - move to groovy
+
+@Canonical
 public class VOUuid {
-    private String uuid;
-    private String path;
-    private String name;
+    String uuid;
+    String path;
+    String name;
 
-    public VOUuid() {
-        super();
-    }
-
+    // TODO Lebeda - smazat
     public VOUuid(String name, String path, String uuid) {
         this.name = name;
         this.path = path;

@@ -1,46 +1,41 @@
-package bibliotheca.model;
+package bibliotheca.model
 
-import bibliotheca.config.VODevice;
-import bibliotheca.tools.Tools;
-import lombok.Data;
-import lombok.SneakyThrows;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.net.URLEncoder;
-import java.util.*;
-
-
+import bibliotheca.config.VODevice
+import bibliotheca.tools.Tools
+import lombok.SneakyThrows
+import org.apache.commons.collections4.CollectionUtils
+import org.apache.commons.lang3.StringUtils
 /**
  * Not clearly VO, contains some simple logic.
  *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
-@Data
+// TODO Lebeda - move to groovy
+
 public class VOFileDetail {
-    private String bookFileName;
-    private String cover;
-    private String dbknihUrl;
-    private final List<VOFile> files = new ArrayList<>();
-    private String desc;
-    private String path;
-    private final List<String> targets = new ArrayList<>();
-    private List<VODevice> devices = new ArrayList<>();
+    String bookFileName;
+    String cover;
+    String dbknihUrl;
+    final List<VOFile> files = new ArrayList<>();
+    String desc;
+    String path;
+    final List<String> targets = new ArrayList<>();
+    List<VODevice> devices = new ArrayList<>();
 
-    private boolean tidyUp = false;
-    private String targetPath = "";
-    private String author;
+    boolean tidyUp = false;
+    String targetPath = "";
+    String author;
 
-    private String title;
-    private final List<String> authors = new ArrayList<>();
-    private String serie;
+    String title;
+    final List<String> authors = new ArrayList<>();
+    String serie;
 
-    private String hodnoceniDbProcento;
-    private String hodnoceniDbPocet;
+    String hodnoceniDbProcento;
+    String hodnoceniDbPocet;
 
-    private String uuid;
-    private boolean dirty = false;
+    String uuid;
+    boolean dirty = false;
 
     public VOFileDetail() {
         super();

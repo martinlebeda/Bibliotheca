@@ -15,6 +15,8 @@ import java.nio.file.Paths;
 @Service
 public class ConfigServiceImpl implements ConfigService {
 
+    // TODO Lebeda - convert to Groovy
+
     // config file
     private static final String CONFIG_FILE = "bibliotheca.xml";
 
