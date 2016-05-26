@@ -5,6 +5,7 @@ import bibliotheca.model.VOFile;
 import bibliotheca.model.VOPath;
 import bibliotheca.service.BookDetailService;
 import bibliotheca.service.FileService;
+import bibliotheca.service.UuidService;
 import bibliotheca.tools.Tools;
 import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -45,6 +46,8 @@ public class FileServiceImpl implements FileService {
 
     public static final String TIDYUP = "tidyup";
 
+    @Autowired
+    private UuidService uuidService;
 
     @Autowired
     private ConfigService configService;
@@ -397,6 +400,10 @@ public class FileServiceImpl implements FileService {
                     ) {
                 //noinspection ResultOfMethodCallIgnored
                 fileFrom.delete();
+                if (fileFrom.getName().endsWith("uuid")) {
+                    final String id = uuidService.getUuid(fileFrom.getParent(), FilenameUtils.getBaseName(fileFrom.getName()));
+                    uuidService.removeFromCache(id);
+                }
             } else {
                 String pattern = "yyyyMMdd";
                 SimpleDateFormat format = new SimpleDateFormat(pattern);
@@ -408,6 +415,11 @@ public class FileServiceImpl implements FileService {
             }
         } else {
             FileUtils.moveFile(fileFrom, tgtFile);
+            if (fileFrom.getName().endsWith("uuid")) {
+                final String id = uuidService.getUuid(fileFrom.getParent(), FilenameUtils.getBaseName(fileFrom.getName()));
+                uuidService.removeFromCache(id);
+                uuidService.getUuid(tgtFile.getParent(), FilenameUtils.getBaseName(tgtFile.getName()));
+            }
         }
     }
 

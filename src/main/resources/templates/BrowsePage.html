@@ -19,6 +19,9 @@
     <script src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.5/js/bootstrap.min.js"
             th:src="@{/webjars/bootstrap/3.3.5/js/bootstrap.min.js}"></script>
 
+    <script src="http://cdn.jsdelivr.net/webjars/bootbox/4.4.0/bootbox.js"
+                th:src="@{/webjars/bootbox/4.4.0/bootbox.js}"></script>
+
     <link href="http://cdn.jsdelivr.net/webjars/font-awesome/4.4.0/css/font-awesome.min.css"
           th:href="@{/webjars/font-awesome/4.4.0/css/font-awesome.min.css}"
           rel="stylesheet" media="screen"/>
@@ -77,8 +80,7 @@
                             <i class="fa fa-cog fa-lg"></i><span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a th:href="|https://www.google.cz/search?q=${navigatorFile}|"
-                                   target="_blank">Google</a>
+                                <a th:href="|https://www.google.cz/search?q=${navigatorFile}|" target="_blank">Google</a>
                             </li>
                             <li>
                                 <a th:href="|editDir?path=${path}|">Edit</a>
@@ -87,8 +89,11 @@
                             <li><a th:href="|browse?path=${path}&amp;action=trydball|">TryDB all unidentified</a></li>
                             <li><a th:href="|browse?path=${path}&amp;action=cleanupall|">Move all identified</a></li>
                             <li>
-                                <a th:onclick="'javascript:chooseJoinModalDir(\'' + ${navigatorFile} + '\', \'' + ${path} + '\');'">Join
-                                    to ...</a>
+                                <a th:onclick="'javascript:chooseJoinModalDir(\'' + ${navigatorFile} + '\', \'' + ${path} + '\');'">Join to ...</a>
+                            </li>
+                            <li role="presentation" class="divider"></li>
+                            <li>
+                                <a th:onclick="'javascript:refreshIndex();'">Refresh index</a>
                             </li>
                         </ul>
                     </li>
@@ -278,7 +283,7 @@
                                             to
                                             ...</a></li>
                                     <li role="presentation" class="divider"></li>
-                                    <li><a th:onclick="'javascript:deleteBook(\'' + ${p.uuid} + '\');'">Delete</a></li>
+                                    <li><a th:onclick="'javascript:deleteBook(\'' + ${p.uuid} + '\', \'' + ${p.title} + '\');'">Delete</a></li>
                                 </ul>
                             </div>
 

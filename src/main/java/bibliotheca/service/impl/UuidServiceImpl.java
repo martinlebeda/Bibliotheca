@@ -30,16 +30,13 @@ public class UuidServiceImpl implements UuidService, DisposableBean {
 
     @Autowired
     private ConfigService configService;
+
     /**
      * Cache for books uuid
      */
-    // TODO Lebeda - reindex whole Store
-    // TODO Lebeda - pernament cache mapdb??
     private Gson gson = new Gson();
     private DB db;
     private ConcurrentMap<String, VOUuid> indexCache;
-
-//    private Map<String, VOUuid> indexCache = new HashMap<>();
 
     @PostConstruct
     void init() {
@@ -77,8 +74,17 @@ public class UuidServiceImpl implements UuidService, DisposableBean {
 
     @Override
     public VOUuid getByUuid(String uuid) {
-        // TODO Lebeda - check existence value
-        return indexCache.get(uuid);
+        VOUuid voUuid = indexCache.get(uuid);
+
+        // check existence value
+        final File file = Paths.get(voUuid.getPath(), voUuid.getName() + ".uuid").toFile();
+        if (!file.exists()) {
+            voUuid = null;
+            removeFromCache(uuid);
+            // TODO Lebeda - start refresh cache on background, depends on semafor
+        }
+
+        return voUuid;
     }
 
     @Override
@@ -101,22 +107,6 @@ public class UuidServiceImpl implements UuidService, DisposableBean {
         output.close();
         return result;
     }
-
-    /**
-     * Periodicaly cleaning cache from old records.
-     * Remove from map records older then Tools.CLEAR_CACHE_DELAY.
-     */
-    // TODO Lebeda - refresh cache
-//    @Scheduled(fixedDelay = Tools.CLEAR_CACHE_DELAY)
-//    public void clearCache() {
-//        List<VOUuid> tmpVoUuidList = new ArrayList<>(indexCache.values());
-//        tmpVoUuidList.forEach(voUuid -> {
-//            long distance = (new Date()).getTime() - voUuid.getCached().getTime();
-//            if (distance > Tools.CLEAR_CACHE_DELAY) {
-//                indexCache.remove(voUuid.getUuid());
-//            }
-//        });
-//    }
 
     @Override
     public void destroy() throws Exception {

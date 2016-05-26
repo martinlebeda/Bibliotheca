@@ -148,10 +148,13 @@ public class MainRestControler {
         final String path = voUuid.getPath();
 
         fileService.tidyUpBook(name, path);
-
-        uuidService.removeFromCache(id);
     }
 
+    @RequestMapping("/refreshIndex")
+    public void refreshIndex() {
+        // TODO Lebeda - zavolat refresh indexu uuid
+        System.out.println("refresh index");
+    }
 
     @RequestMapping("/joinTo")
     public void joinTo(@RequestParam("idFrom") String idFrom, @RequestParam("idTo") String idTo) {

@@ -20,6 +20,35 @@ function generateTgt(id, tgt) {
     });
 }
 
+// refresh index uuid
+function refreshIndex() {
+    var jqxhr = $.get('/refreshIndex', function () {
+            showNotify("Bibliotheca", "Refresh of index is done", "pic/refresh_000000_32.png");
+        })
+        .fail(function () {
+            showNotify("Bibliotheca", "Refresh of index is FAIL", "pic/refresh_000000_32.png");
+        });
+
+}
+
+// show desktop notification
+function showNotify(title, body, icon) {
+    title = title || "Bibliotheca";
+    icon = icon || "pic/refresh_000000_32.png";
+    body = body || "Action is completed";
+    if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+    }
+    var n = new Notification(title, {
+        body: body,
+        icon: icon
+    });
+
+    setTimeout(function () {
+        n.close();
+    }, 3000);
+}
+
 // generate and copy to reader
 function toReader(id, devFormat, devPath) {
     $("#gen" + id).css("display", "inline");
@@ -97,9 +126,13 @@ function clearMetadata(id) {
 }
 
 // delete book
-function deleteBook(id) {
-    $.get("/deleteBook", {'id': id}, function (data) {
-        $('#' + id).remove();
+function deleteBook(id, title) {
+    bootbox.confirm("Are you sure to delete \"" + title + "\"?", function (result) {
+        if (result) {
+            $.get("/deleteBook", {'id': id}, function (data) {
+                $('#' + id).remove();
+            });
+        }
     });
 }
 
