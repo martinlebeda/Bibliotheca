@@ -5,7 +5,6 @@ package bibliotheca.model
  *
  * @deprecated nahradit pomocí File
  */
-// TODO Lebeda - move to groovy
 // TODO Lebeda - smazat třídu
 @Deprecated
 public class VOPath {

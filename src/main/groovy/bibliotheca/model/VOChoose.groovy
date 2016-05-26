@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 7.12.15
  */
-// TODO Lebeda - move to groovy
 @ToString
 @EqualsAndHashCode
 public class VOChoose {

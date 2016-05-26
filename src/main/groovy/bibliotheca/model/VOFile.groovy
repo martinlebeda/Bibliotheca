@@ -7,7 +7,6 @@ import org.apache.commons.io.FilenameUtils
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
-// TODO Lebeda - move to groovy
 
 @ToString
 @EqualsAndHashCode
