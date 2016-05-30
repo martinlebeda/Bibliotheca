@@ -1,31 +1,20 @@
-package bibliotheca.tools;
+package bibliotheca.tools
 
-import bibliotheca.model.VOFile;
-import bibliotheca.model.VOPath;
-import lombok.SneakyThrows;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
+import bibliotheca.model.VOFile
+import bibliotheca.model.VOPath
+import lombok.SneakyThrows
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.io.IOUtils
+import org.apache.commons.lang3.ArrayUtils
+import org.apache.commons.lang3.StringUtils
+import org.yaml.snakeyaml.Yaml
 
-import java.io.*;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Paths;
-import java.text.Normalizer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-
+import java.nio.channels.Channels
+import java.nio.channels.ReadableByteChannel
+import java.nio.file.Paths
+import java.util.stream.Collectors
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 21.8.14
@@ -44,12 +33,6 @@ public class Tools {
     public static final String METADATA_KEY_SERIE = "serie";
     public static final String METADATA_KEY_POZNAMKA = "poznamka";
     public static final String METADATA_KEY_AUTHORS = "authors";
-
-    public static final int CLEAR_CACHE_DELAY = 3600000; // in miliseconds
-
-    public static String removeDiacritics(String s) {
-        return Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-    }
 
     /**
      * Check if client coming from localhost
@@ -93,7 +76,7 @@ public class Tools {
             // move content and delete
             final File[] files = file.listFiles();
             if (ArrayUtils.isNotEmpty(files)) {
-                Arrays.stream(files).forEach(srcFile -> moveFileToNewPath(newPath, srcFile));
+                Arrays.stream(files).forEach({srcFile -> moveFileToNewPath(newPath, srcFile)});
             }
             FileUtils.deleteDirectory(file);
         } else {
@@ -155,7 +138,7 @@ public class Tools {
     public static void renameAll(final String basename, final File[] listFiles, final String frmName) {
         // rename all
         final String finalBasename = basename;
-        Arrays.stream(listFiles).forEach(file1 -> {
+        Arrays.stream(listFiles).forEach({file1 ->
             renameFile(frmName, finalBasename, file1);
         });
     }
@@ -187,30 +170,18 @@ public class Tools {
 
     public static Map<String, Object> getStringStringMap(String path, String basename) {
         Map<String, Object> metadata = loadMetaData(path, basename);
-        if (!metadata.containsKey(METADATA_KEY_DATABAZEKNIH_CZ)) {
+        if (!metadata?.containsKey(METADATA_KEY_DATABAZEKNIH_CZ)) {
             metadata.put(METADATA_KEY_DATABAZEKNIH_CZ, "");
         }
         return metadata;
-    }
-
-
-    @SneakyThrows
-    public static void writeMetaData(String path, String basename, Map<String, Object> metadata) {
-        DumperOptions options = new DumperOptions();
-        options.setPrettyFlow(true);
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
-
-        Yaml yaml = new Yaml(options);
-        Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
-        yaml.dump(metadata, writer);
     }
 
     // TODO - JavaDoc - Lebeda
     public static List<VOPath> getVoPaths(String path) {
         File[] files = new File(path).listFiles();
         return Arrays.asList(files).stream()
-                .filter(File::isFile)
-                .map(VOPath::new)
+                .filter({it.isFile()})
+                .map({new VOPath(it)})
                 .collect(Collectors.toList());
     }
 }

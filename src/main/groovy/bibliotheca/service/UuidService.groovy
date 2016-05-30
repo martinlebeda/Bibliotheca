@@ -1,6 +1,5 @@
 package bibliotheca.service
 
-import bibliotheca.config.ConfigService
 import bibliotheca.model.VOUuid
 import com.google.gson.Gson
 import groovy.util.logging.Log
@@ -31,23 +30,32 @@ public class UuidService implements DisposableBean {
     /**
      * Cache for books uuid
      */
-    private Gson gson = new Gson();
     private DB db;
-    private ConcurrentMap<String, VOUuid> indexCache;
     private boolean refreshRunning = false;
+
+    @Delegate
+    private ConcurrentMap<String, VOUuid> indexCache;
 
     @PostConstruct
     void init() {
+
         db = DBMaker.fileDB(Paths.get(configService.getBibliothecaDir(),"indexCache.db").toString()).make();
         indexCache = db.hashMap("indexCache", Serializer.STRING, new Serializer<VOUuid>() {
                 @Override
                 public void serialize(@NotNull DataOutput2 out, @NotNull VOUuid value) throws IOException {
+                    Gson gson = new Gson();
                     out.writeChars(gson.toJson(value));
                 }
 
                 @Override
                 public VOUuid deserialize(@NotNull DataInput2 input, int available) throws IOException {
-                    return gson.fromJson(input.readLine(), VOUuid.class);
+                    def line = input?.readLine()
+                    VOUuid json = null
+                    if (line) {
+                        Gson gson = new Gson();
+                        json = gson.fromJson(line, VOUuid.class)
+                    }
+                    return json;
                 }
             }).createOrOpen();
     }
@@ -107,6 +115,7 @@ public class UuidService implements DisposableBean {
          */
     public void removeFromCache(String id) {
         indexCache.remove(id);
+        log.info("$id is removed from uuid index cache")
     }
 
     // TODO - JavaDoc - Lebeda

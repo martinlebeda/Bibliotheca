@@ -1,6 +1,6 @@
 package bibliotheca.service.impl;
 
-import bibliotheca.config.ConfigService;
+import bibliotheca.service.ConfigService;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOPath;
 import bibliotheca.service.BookDetailService;

@@ -1,6 +1,7 @@
 package bibliotheca.service.impl;
 
 import bibliotheca.model.VOFile;
+import bibliotheca.service.BookDetailService;
 import bibliotheca.service.DataBaseKnihService;
 import bibliotheca.service.EditFilePageService;
 import bibliotheca.service.FileService;
@@ -34,6 +35,9 @@ public class EditFilePageServiceImpl implements EditFilePageService {
 
     @Autowired
     private DataBaseKnihService dataBaseKnihService;
+
+    @Autowired
+    private BookDetailService bookDetailService;
 
     @Override
     public Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
@@ -75,8 +79,7 @@ public class EditFilePageServiceImpl implements EditFilePageService {
         // set matadata
         if (StringUtils.isNotBlank(dbknih) && !dbknih.equals(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
             metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, dbknih);
-
-            Tools.writeMetaData(path, basename, metadata);
+            bookDetailService.writeMetaData(path, basename, metadata);
         }
 
         // save metadata
@@ -147,7 +150,7 @@ public class EditFilePageServiceImpl implements EditFilePageService {
         if (StringUtils.isNotBlank(url) && !url.equals(metadata.get(Tools.METADATA_KEY_DATABAZEKNIH_CZ))) {
             metadata.put(Tools.METADATA_KEY_DATABAZEKNIH_CZ, url);
 
-            Tools.writeMetaData(path, name, metadata);
+            bookDetailService.writeMetaData(path, name, metadata);
         }
     }
 

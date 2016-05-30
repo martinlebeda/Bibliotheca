@@ -1,11 +1,12 @@
 package bibliotheca.web;
 
-import bibliotheca.config.ConfigService;
+import bibliotheca.service.ConfigService;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
 import bibliotheca.model.VOUuid;
 import bibliotheca.service.*;
+import bibliotheca.service.BookDetailService;
 import bibliotheca.tools.Tools;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import bibliotheca.service.UuidService;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;

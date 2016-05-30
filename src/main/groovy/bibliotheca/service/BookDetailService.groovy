@@ -1,44 +1,32 @@
-package bibliotheca.service.impl;
+package bibliotheca.service
 
-import bibliotheca.config.ConfigService;
-import bibliotheca.model.VOFile;
-import bibliotheca.model.VOFileDetail;
-import bibliotheca.service.BookDetailService;
-import bibliotheca.service.DataBaseKnihService;
-import bibliotheca.service.FileService;
-import bibliotheca.tools.Tools;
-import lombok.SneakyThrows;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.lang3.StringUtils;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.pegdown.PegDownProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import bibliotheca.service.UuidService;
+import bibliotheca.model.VOFile
+import bibliotheca.model.VOFileDetail
+import bibliotheca.tools.Tools
+import org.apache.commons.collections4.CollectionUtils
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.io.IOUtils
+import org.apache.commons.io.filefilter.TrueFileFilter
+import org.apache.commons.lang3.StringUtils
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
+import org.pegdown.PegDownProcessor
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.Yaml
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.stream.Collectors
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 3.12.15
  */
 @Service
-public class BookDetailServiceImpl implements BookDetailService {
+public class BookDetailService {
 
     @Autowired
     private FileService fileService;
@@ -52,24 +40,41 @@ public class BookDetailServiceImpl implements BookDetailService {
     @Autowired
     DataBaseKnihService dataBaseKnihService;
 
+    @Autowired
+    private FtMetaService ftMetaService;
+
+    /**
+     * Create object with detail file description.
+     * List of files in path will be loaded internally.
+     *
+     * @param path path for load
+     * @param key  name of book files without suffix
+     * @return book description
+     */
     public VOFileDetail getVoFileDetail(String path, String key) {
         File file = new File(path);
 
         final Collection<File> fileCollection = FileUtils.listFilesAndDirs(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
         final List<VOFile> voFileList = fileCollection.stream()
-                .filter(File::isFile)
-                .filter(object -> StringUtils.startsWith(object.getName(), key))
-                .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
+                .filter({it.isFile()})
+                .filter({object -> StringUtils.startsWith(object.getName(), key)})
+                .sorted({ o1, o2 -> o1.getName().compareToIgnoreCase(o2.getName())} as Comparator<? super File>)
 //                .map(f -> new VOPath(f.getName(), f.getAbsolutePath()))
-                .map(p -> new VOFile(FilenameUtils.getExtension(p.getPath()), p.getName(), p.getPath()))
+                .map({p -> new VOFile(FilenameUtils.getExtension(p.getPath()), p.getName(), p.getPath())})
                 .collect(Collectors.toList());
 
         return getVoFileDetail(path, key, voFileList);
     }
 
-    @Override
-    @SneakyThrows
-    public VOFileDetail getVoFileDetail(String path, String key, List<VOFile> voFileList) {
+    /**
+     * Create object with detail file description
+     *
+     * @param path       path for load
+     * @param key        name of book files without suffix
+     * @param voFileList list of files loaded from path (usualy loaded once for all books in path)
+     * @return book description
+     */
+    VOFileDetail getVoFileDetail(String path, String key, List<VOFile> voFileList) {
         final String uuid = uuidService.getUuid(path, key);
 
         final VOFile voFile = fileService.getCover(voFileList);
@@ -142,7 +147,8 @@ public class BookDetailServiceImpl implements BookDetailService {
             }
 
             if (fileDetail.isDirty()) {
-                Tools.writeMetaData(path, fileDetail.getBookFileName(), fileDetail.getMetadata());
+                writeMetaData(path, fileDetail.getBookFileName(), fileDetail.getMetadata());
+                ftMetaService.put(fileDetail); // TODO Lebeda - batch reindex
             }
         }
 
@@ -166,8 +172,8 @@ public class BookDetailServiceImpl implements BookDetailService {
         }
 
         fileDetail.getFiles().addAll(
-                CollectionUtils.select(voFileList,
-                        object -> !("jpg".equalsIgnoreCase(object.getExt())
+                CollectionUtils.select(voFileList, { object ->
+                    !("jpg".equalsIgnoreCase(object.getExt())
                                 || Tools.NOCOVER.equalsIgnoreCase(object.getExt())
                                 || "mkd".equalsIgnoreCase(object.getExt())
                                 || "mht".equalsIgnoreCase(object.getExt())
@@ -176,21 +182,20 @@ public class BookDetailServiceImpl implements BookDetailService {
                                 || "mhtml".equalsIgnoreCase(object.getExt())
                                 || "htmlz".equalsIgnoreCase(object.getExt())
                         )
-                )
+                })
         );
 
         // !suf -> suff, epub, fb2, mobi
-        Arrays.stream(new String[]{"epub", "fb2", "mobi"}).forEach(s -> {
+        ["epub", "fb2", "mobi"].forEach { s ->
             if (fileService.getTypeFile(voFileList, s, false) == null) {
                 fileDetail.getTargets().add(s);
             }
-        });
+        }
 
         fileDetail.getDevices().addAll(configService.getConfig().getDevices());
         return fileDetail;
     }
 
-    @SneakyThrows
     private String getDesc(final List<VOFile> files) {
         VOFile readme = fileService.getTypeFile(files, "mkd", false);
         final String html;
@@ -209,11 +214,27 @@ public class BookDetailServiceImpl implements BookDetailService {
         return html;
     }
 
-    @Override
-    public String getTgtPathByAuthor(String author) {
+    /**
+     * Create target path for fiction books.
+     * For base of path use "fictionArchive" from config.
+     *
+     * @param author author in schema "surrname, firstname [middlenames...]"
+     * @return path for move book
+     */
+    String getTgtPathByAuthor(String author) {
         String firstLetter = StringUtils.substring(author, 0, 1).toUpperCase();
         File beleTgt = new File(configService.getConfig().getFictionArchive());
         return Paths.get(beleTgt.getAbsolutePath(), firstLetter, author).toString();
     }
 
+
+    void writeMetaData(String path, String basename, Map<String, Object> metadata) {
+        DumperOptions options = new DumperOptions();
+        options.setPrettyFlow(true);
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
+
+        Yaml yaml = new Yaml(options);
+        Writer writer = new FileWriter(Paths.get(path, basename + ".yaml").toFile());
+        yaml.dump(metadata, writer);
+    }
 }

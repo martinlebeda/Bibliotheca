@@ -213,6 +213,9 @@
                                 </ul>
                             </div>
 
+                            <a class="spaceAround" th:href="|view${path}/${p.bookFileName}.htmlz/pack/index.html|" target="_blank" title="view in browser"><i class="fa fa-desktop" aria-hidden="true"></i></a>
+                            <a class="spaceAround" th:each="d : ${p.devices}" th:onclick="'javascript:toReader(\'' + ${p.uuid} + '\',\'' + ${d.format}  + '\',\'' + ${d.path}  + '\');'" th:title="${d.name}"><i class="fa fa-mobile" aria-hidden="true"></i></a>
+
                         </div>
                         <div class="itemToolbarPartRight">
 
@@ -221,7 +224,11 @@
                                     th:text="|Move to &quot;${p.bookauthor}&quot;|">Move to ...</a>
                             <a class="spaceAround"
                                th:unless="${#strings.isEmpty(p.targetPath)}"
-                               th:href="|browse?path=${p.targetPath}|">...</a>
+                               th:href="|browse?path=${p.targetPath}|"><i class="fa fa-user" aria-hidden="true"></i></a>
+
+                            <a class="spaceAround"
+                               th:unless="${p.path == path}"
+                               th:href="|browse?path=${p.path}|"><i class="fa fa-folder" aria-hidden="true"></i></a>
 
                             <a class="spaceAround" th:if="${p.dbknihUrlExists}" th:href="${p.dbknihUrl}"
                                th:text="|${#strings.defaultString(p.hodnoceniDbProcento,'&minus; ')}&percnt; (${#strings.defaultString(p.hodnoceniDbPocet,0)}) DatabázeKnih.cz|"

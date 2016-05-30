@@ -1,24 +1,22 @@
 package bibliotheca.service.impl;
 
-import bibliotheca.config.ConfigService;
 import bibliotheca.model.VOFile;
 import bibliotheca.model.VOFileDetail;
 import bibliotheca.model.VOPath;
+import bibliotheca.model.VOUuid;
 import bibliotheca.service.*;
 import bibliotheca.tools.Tools;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import bibliotheca.service.UuidService;
 
 import java.io.File;
 import java.net.URLEncoder;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +39,9 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
     @Autowired
     private DataBaseKnihService dataBaseKnihService;
+
+    @Autowired
+    private FtMetaService ftMetaService;
 
     @Autowired
     private UuidService uuidService;
@@ -86,12 +87,19 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         model.put(Tools.FRM_SEARCH, booksearch);
         List<File> dirs = new ArrayList<>();
         if (StringUtils.isNotBlank(booksearch)) {
-            final Collection<File> fileCollection = FileUtils.listFilesAndDirs(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-            CollectionUtils.filter(fileCollection, object ->
-                    StringUtils.containsIgnoreCase(
-                            Tools.removeDiacritics(object.getName()),
-                            Tools.removeDiacritics(booksearch)));
-            dirs.addAll(fileCollection);
+//            final Collection<File> fileCollection = FileUtils.listFilesAndDirs(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+//            CollectionUtils.filter(fileCollection, object ->
+//                    StringUtils.containsIgnoreCase(
+//                            Tools.removeDiacritics(object.getName()),
+//                            Tools.removeDiacritics(booksearch)));
+//            dirs.addAll(fileCollection);
+            // search by index
+            final Set<String> search = ftMetaService.search(booksearch);
+            // TODO Lebeda - konvertovat nalezené do books
+            search.forEach(s -> {
+                final VOUuid voUuid = uuidService.get(s);
+                dirs.add(Paths.get(voUuid.getPath(), voUuid.getName() + ".uuid").toFile());
+            });
         } else {
             final File[] listFiles = file.listFiles();
             if (listFiles != null) {
@@ -193,6 +201,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 //            model.put("encodedPath", URLEncoder.encode(file.getAbsolutePath(), "UTF-8").replaceAll("%2F", "/"));
 
         VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
+        ftMetaService.put(fd);
         return dataBaseKnihService.tryDb(fd);
 //
 ////        List<VOFileDetail> fileDetails = new ArrayList<>();

@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils
  *         Date: 16.12.14
  */
 
+// TODO Lebeda - document which logical data are in fields
 public class VOFileDetail {
     String bookFileName;
     String cover;
@@ -184,6 +185,7 @@ public class VOFileDetail {
         if (CollectionUtils.isNotEmpty(authors)) {
             this.authors.addAll(authors);
         }
-        this.dirty = true;
+        // this.dirty = true;
+        // TODO Lebeda - domyslet
     }
 }

@@ -1,68 +1,58 @@
-package bibliotheca.web;
+package bibliotheca.web
 
-import bibliotheca.model.VOFile;
-import bibliotheca.model.VOFileDetail;
-import bibliotheca.model.VOUuid;
-import bibliotheca.service.BookDetailService;
-import bibliotheca.service.BrowsePageService;
-import bibliotheca.service.DataBaseKnihService;
-import bibliotheca.service.FileService;
-import bibliotheca.tools.Tools;
-import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.imgscalr.Scalr;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.HandlerMapping;
-import bibliotheca.service.UuidService;
+import bibliotheca.model.VOFile
+import bibliotheca.model.VOUuid
+import bibliotheca.service.*
+import bibliotheca.tools.Tools
+import groovy.util.logging.Log
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.io.IOUtils
+import org.apache.commons.lang3.StringUtils
+import org.imgscalr.Scalr
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.HandlerMapping
 
-import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
+import javax.imageio.ImageIO
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import java.awt.image.BufferedImage
+import java.nio.file.Paths
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 8.9.15
  */
 
+@Log
 @RestController
 public class MainRestControler {
 
     @Autowired
-    FileService fileService;
+    private FileService fileService;
 
     @Autowired
-    BrowsePageService browsePageService;
+    private BrowsePageService browsePageService;
 
     @Autowired
-    UuidService uuidService;
+    private UuidService uuidService;
 
     @Autowired
-    BookDetailService bookDetailService;
+    private BookDetailService bookDetailService;
 
     @Autowired
-    DataBaseKnihService dataBaseKnihService;
+    private DataBaseKnihService dataBaseKnihService;
+
+    @Autowired
+    private FtMetaService ftMetaService;
 
 
     @RequestMapping("/cover")
-    @SneakyThrows
     public byte[] cover(@RequestParam("path") String path) {
         File file = new File(path);
         BufferedImage image = ImageIO.read(file);
@@ -75,7 +65,6 @@ public class MainRestControler {
     //    @RequestMapping("/view/**{variable:.+}")
 //    public byte[] view(@PathVariable String variable, HttpServletRequest request) {
     @RequestMapping("/view/**")
-    @SneakyThrows
     public byte[] view(HttpServletRequest request) {
         String restOfTheUrl = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String splat = restOfTheUrl.replaceFirst("/view/", "").replaceAll("\\+", " ");
@@ -104,7 +93,6 @@ public class MainRestControler {
     }
 
     @RequestMapping("/download")
-    @SneakyThrows
     public @ResponseBody void download(@RequestParam("path") String path, HttpServletResponse response) {
         File file = new File(path);
 
@@ -125,23 +113,15 @@ public class MainRestControler {
         String path = voUuid.getPath();
         String name = voUuid.getName();
 
-        VOFileDetail fd = bookDetailService.getVoFileDetail(path, name);
-        List<VOFile> files = fd.getFiles();
-        files.stream().forEach(voFile -> {
-            File file = new File(voFile.getPath());
-            if (file.exists()) {
-                file.delete();
+        Paths.get(path).toFile().eachFile {
+            if (it.name.startsWith(name)) {
+                log.info("deleting - ${it.name}")
+                it.delete()
             }
-        });
-
-        dataBaseKnihService.clearMetadata(path, name);
-
-        File uuidFile = Paths.get(path, name + ".uuid").toFile();
-        if (uuidFile.exists()) {
-            uuidFile.delete();
         }
 
         uuidService.removeFromCache(id);
+        ftMetaService.remove(id);
     }
 
     // TODO - JavaDoc - Lebeda
@@ -157,6 +137,7 @@ public class MainRestControler {
     @RequestMapping("/refreshIndex")
     public void refreshIndex() {
         uuidService.refreshUuids();
+        ftMetaService.reindexAll();
     }
 
     @RequestMapping("/joinTo")
@@ -164,9 +145,11 @@ public class MainRestControler {
         VOUuid voUuidFrom = uuidService.getByUuid(idFrom);
         VOUuid voUuidTo = uuidService.getByUuid(idTo);
 
-        final File[] listFiles = new File(voUuidFrom.getPath()).listFiles((dir, jm) -> jm.startsWith(voUuidFrom.getName()));
+        final File[] listFiles = new File(voUuidFrom.getPath().trim()).listFiles({ File f ->
+            def name = voUuidFrom.getName()
+            f.name.startsWith(name) } as FileFilter);
 
-        Arrays.stream(listFiles).forEach((fileFrom) -> {
+        Arrays.stream(listFiles).forEach({ fileFrom ->
             if (fileFrom.getName().endsWith("nocover") || fileFrom.getName().endsWith("uuid")) {
                 fileFrom.delete();
             } else {
@@ -180,11 +163,11 @@ public class MainRestControler {
             }
         });
 
-        uuidService.removeFromCache(voUuidFrom.getUuid());
+        uuidService.removeFromCache(voUuidFrom.getUuid())
+        ftMetaService.remove(voUuidFrom.uuid)
     }
 
     @RequestMapping("/joinToDir")
-    @SneakyThrows
     public void joinToDir(@RequestParam("srcPath") String srcPath, @RequestParam("tgtPath") String tgtPath) {
         File srcFile = new File(srcPath);
 
@@ -192,7 +175,7 @@ public class MainRestControler {
 
         Arrays.stream(listFiles)
                 .sorted()
-                .forEach(file -> {
+                .forEach({ file ->
                     File tgt = Paths.get(tgtPath, file.getName()).toFile();
                     fileService.tidyUp(file, tgt);
                 });
