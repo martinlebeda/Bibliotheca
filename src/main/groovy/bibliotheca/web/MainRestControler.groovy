@@ -169,6 +169,7 @@ public class MainRestControler {
 
     @RequestMapping("/joinToDir")
     public void joinToDir(@RequestParam("srcPath") String srcPath, @RequestParam("tgtPath") String tgtPath) {
+        log.info("join to dir $srcPath $tgtPath")
         File srcFile = new File(srcPath);
 
         final File[] listFiles = srcFile.listFiles();

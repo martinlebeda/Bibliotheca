@@ -176,8 +176,13 @@ public class DataBaseKnihService {
         if (cacheDoc.containsKey(url)) {
             return cacheDoc.get(url);
         } else {
-            Document doc = Jsoup.connect(url).timeout(CONNECT_TIMEOUT_MILLIS).get();
+            Document doc = null
+            try {
+                doc = Jsoup.connect(url).timeout(CONNECT_TIMEOUT_MILLIS).get();
             cacheDoc.put(url, doc);
+            } catch (UnknownHostException e) {
+                // ignorovat
+            }
             return doc;
         }
     }

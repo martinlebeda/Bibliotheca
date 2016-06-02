@@ -124,12 +124,19 @@
 
     <div class="row prevnextnav">
         <div class="col-xs-6 navPrev">
-            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}"
+            <a th:title="|Join to directory ${prevDir.name}|"
+               th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${prevDir.absolutePath} + '\');'">
+                <i class="fa fa-backward"></i>
+            </a>
+            <a th:if="${prevDir}" th:text="${prevDir.name}"
                                               th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
         </div>
         <div class="col-xs-6 navNext">
             <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a>
-            <i class="fa fa-forward"></i>
+            <a th:title="|Join to directory ${nextDir.name}|"
+               th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${nextDir.absolutePath} + '\');'">
+                <i class="fa fa-forward"></i>
+            </a>
         </div>
     </div>
 
@@ -235,6 +242,7 @@
                                target="_blank">DatabázeKnih.cz</a>
                             <!--<a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"-->
                             <!--th:href="|browse?path=${path}&amp;tryDB=${p.bookFileName}|">TryDB</a>-->
+                            <!-- TODO Lebeda - zajistit db nebo říci ok - povídka -->
                             <a class="file-external_search spaceAround" th:unless="${p.dbknihUrlExists}"
                                onclick="tryDb('123')" th:onclick="'javascript:tryDb(\'' + ${p.uuid} + '\', \'' + ${p.bookname} + '\', \'' + ${p.bookauthor} + '\');'">TryDB</a>
 
@@ -304,12 +312,20 @@
 
     <div class="row prevnextnav">
         <div class="col-xs-6 navPrev">
-            <i class="fa fa-backward"></i> <a th:if="${prevDir}" th:text="${prevDir.name}"
+            <a th:title="|Join to directory ${prevDir.name}|"
+               th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${prevDir.absolutePath} + '\');'">
+                <i class="fa fa-backward"></i>
+            </a>
+            <a th:if="${prevDir}" th:text="${prevDir.name}"
                                               th:href="|browse?path=${prevDir.absolutePath}|">prevDir</a>
         </div>
         <div class="col-xs-6 navNext">
             <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a>
             <i class="fa fa-forward"></i>
+            <a th:title="|Join to directory ${nextDir.name}|"
+               th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${nextDir.absolutePath} + '\');'">
+                <i class="fa fa-forward"></i>
+            </a>
         </div>
     </div>
 
