@@ -1,41 +1,34 @@
-package bibliotheca.service.impl;
+package bibliotheca.service
 
-import bibliotheca.service.ConfigService;
-import bibliotheca.model.VOFile;
-import bibliotheca.model.VOPath;
-import bibliotheca.service.BookDetailService;
-import bibliotheca.service.FileService;
-import bibliotheca.tools.Tools;
-import lombok.SneakyThrows;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import bibliotheca.service.UuidService;
+import bibliotheca.model.VOFile
+import bibliotheca.model.VOPath
+import bibliotheca.tools.Tools
+import lombok.SneakyThrows
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.collections4.CollectionUtils
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.io.IOUtils
+import org.apache.commons.lang3.StringUtils
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.PDPage
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import javax.imageio.ImageIO
+import java.awt.image.BufferedImage
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.text.SimpleDateFormat
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 16.12.14
  */
 @Service
-public class FileServiceImpl implements FileService {
-
+public class FileService {
 
 //    protected final Request request;
 //    protected final Response response;
@@ -55,12 +48,12 @@ public class FileServiceImpl implements FileService {
     @Autowired
     private BookDetailService bookDetailService;
 
-    @Override
+
     public void fillNavigatorData(final HashMap<String, Object> model,
                                   final File file,
                                   final boolean navigableLastFile) {
         final ArrayList<VOPath> navigator = new ArrayList<>();
-        if (!CollectionUtils.exists(configService.getConfig().getFictionPaths(), s -> s.equalsIgnoreCase(file.getAbsolutePath()))) {
+        if (!CollectionUtils.exists(configService.getConfig().getFictionPaths(), { s -> s.equalsIgnoreCase(file.getAbsolutePath()) })) {
             for (File navigatorFile : getNavigatorData(file.getParentFile())) {
                 navigator.add(new VOPath(navigatorFile.getName(), navigatorFile.getAbsolutePath()));
             }
@@ -71,19 +64,26 @@ public class FileServiceImpl implements FileService {
         model.put("navigableLastFile", navigableLastFile);
     }
 
-    @Override
-    public File[] refreshFiles(final String basename, final File file, List<VOFile> voFileList) {
-        final File[] listFiles;
-        listFiles = file.listFiles((dir, name1) -> name1.startsWith(FilenameUtils.getBaseName(basename)));
+
+    public List<File> refreshFiles(final String basename, final File file, List<VOFile> voFileList) {
+        final List<File> listFiles = new ArrayList<>();
         voFileList.clear();
-        Arrays.stream(listFiles).forEach(file1 -> voFileList.add(new VOFile(file1.getAbsolutePath())));
-        return listFiles;
+        file.eachFile { File f ->
+            if (f.name.startsWith(FilenameUtils.getBaseName(basename))) {
+                listFiles.add(f)
+                voFileList.add(new VOFile(f.getAbsolutePath()))
+            }
+        }
+
+//        listFiles = file.listFiles({ dir, name1 -> name1.startsWith(FilenameUtils.getBaseName(basename)) });
+//        Arrays.stream(listFiles).forEach({ file1 -> voFileList.add(new VOFile(file1.getAbsolutePath())) });
+        return listFiles
     }
 
-    @Override
+
     public VOFile getTypeFile(List<VOFile> files, final String suffix, final boolean generate) {
         final List<VOFile> select = new ArrayList<>();
-        select.addAll(CollectionUtils.select(files, voFile -> voFile.getExt().equalsIgnoreCase(suffix)));
+        select.addAll(CollectionUtils.select(files, { voFile -> voFile.getExt().equalsIgnoreCase(suffix) }));
         VOFile voFile = null;
         if (CollectionUtils.isNotEmpty(select)) {
             voFile = select.get(0);
@@ -189,8 +189,8 @@ public class FileServiceImpl implements FileService {
             final Process process = builder.start();
             process.waitFor();
 
-                //            //~/bin/fixEpubJustify.sh "$TGT" && \
-                //            //~/bin/fixEpubFont.sh "$TGT"
+            //            //~/bin/fixEpubJustify.sh "$TGT" && \
+            //            //~/bin/fixEpubFont.sh "$TGT"
         }
     }
 
@@ -229,7 +229,7 @@ public class FileServiceImpl implements FileService {
         String parentName = file.getAbsolutePath();
         while (parentName.length() > 1) {
             final String finalParentName = parentName;
-            Boolean end = CollectionUtils.exists(configService.getConfig().getFictionPaths(), s -> s.equalsIgnoreCase(finalParentName));
+            Boolean end = CollectionUtils.exists(configService.getConfig().getFictionPaths(), { s -> s.equalsIgnoreCase(finalParentName) });
             File parent = new File(parentName);
             parentFiles.add(parent);
             parentName = parent.getParent();
@@ -241,7 +241,7 @@ public class FileServiceImpl implements FileService {
         return parentFiles;
     }
 
-    @Override
+
     public VOFile getCover(final List<VOFile> files) {
         VOFile cover = getTypeFile(files, "jpg", false);
 
@@ -384,7 +384,7 @@ public class FileServiceImpl implements FileService {
         return result;
     }
 
-    @Override
+
     @SneakyThrows
     public void tidyUp(final File fileFrom, final File tgtFile) {
         if (tgtFile.exists()) {
@@ -397,7 +397,7 @@ public class FileServiceImpl implements FileService {
                     || fileFrom.getName().endsWith("mkd")
                     || fileFrom.getName().endsWith("jpg")
                     || fileFrom.getName().endsWith("yaml")
-                    ) {
+            ) {
                 //noinspection ResultOfMethodCallIgnored
                 if (fileFrom.getName().endsWith("uuid")) {
                     final String id = uuidService.getUuid(fileFrom.getParent(), FilenameUtils.getBaseName(fileFrom.getName()));
@@ -407,9 +407,12 @@ public class FileServiceImpl implements FileService {
             } else {
                 String pattern = "yyyyMMdd";
                 SimpleDateFormat format = new SimpleDateFormat(pattern);
-                String newFileName = FilenameUtils.getBaseName(fileFrom.getName()) + ".bak"
-                        + format.format(new Date(fileFrom.lastModified()))
-                        + "." + FilenameUtils.getExtension(fileFrom.getName());
+
+                def baseName = FilenameUtils.getBaseName(fileFrom.getName())
+                def format1 = format.format(new Date(fileFrom.lastModified()))
+                def extension = FilenameUtils.getExtension(fileFrom.getName())
+                String newFileName = baseName + ".bak" + format1 +"." + extension
+
                 Path tgtFileNahr = Paths.get(tgtFile.getParent(), newFileName);
                 FileUtils.moveFile(fileFrom, tgtFileNahr.toFile());
             }
@@ -423,18 +426,27 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    @Override
-    public void tidyUpBook(String name, String path) {
-        final File[] listFiles = new File(path).listFiles((dir, jm) -> {
-            return jm.startsWith(name);
-        });
 
-        Arrays.stream(listFiles).forEach((fileUklid) -> {
-            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
-            String author = StringUtils.trim(split[0]);
-            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
-            tidyUp(fileUklid, Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile());
-        });
+    public void tidyUpBook(String name, String path) {
+//        final File[] listFiles = new File(path).listFiles({ dir, jm ->
+//            return jm.startsWith(name);
+//        });
+//
+//        Arrays.stream(listFiles).forEach({ fileUklid ->
+//            final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
+//            String author = StringUtils.trim(split[0]);
+//            File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
+//            tidyUp(fileUklid, Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile());
+//        });
+
+        new File(path).eachFile { fileUklid ->
+            if (fileUklid.name.startsWith(name)) {
+                final String[] split = StringUtils.split(fileUklid.getName(), "-", 2);
+                String author = StringUtils.trim(split[0]);
+                File tgt = new File(bookDetailService.getTgtPathByAuthor(author));
+                tidyUp(fileUklid, Paths.get(tgt.getAbsolutePath(), fileUklid.getName()).toFile());
+            }
+        }
     }
 
 }

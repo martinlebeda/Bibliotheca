@@ -1,32 +1,22 @@
-package bibliotheca.web;
+package bibliotheca.web
 
-import bibliotheca.service.ConfigService;
-import bibliotheca.model.VOFile;
-import bibliotheca.model.VOFileDetail;
-import bibliotheca.model.VOPath;
-import bibliotheca.model.VOUuid;
-import bibliotheca.service.*;
-import bibliotheca.service.BookDetailService;
-import bibliotheca.tools.Tools;
-import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import bibliotheca.model.VOFile
+import bibliotheca.model.VOFileDetail
+import bibliotheca.model.VOPath
+import bibliotheca.model.VOUuid
+import bibliotheca.service.*
+import bibliotheca.tools.Tools
+import lombok.SneakyThrows
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang3.StringUtils
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import java.util.stream.Collectors
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 8.9.15
@@ -63,7 +53,7 @@ public class MainControler {
 
         final List<VOPath> belePaths = configService.getConfig().getFictionPaths()
                 .stream()
-                .map(fpath -> new VOPath(FilenameUtils.getBaseName(fpath), fpath))
+                .map({ fpath -> new VOPath(FilenameUtils.getBaseName(fpath), fpath) })
                 .collect(Collectors.toList());
         model.addAttribute("bele", belePaths);
 
@@ -152,10 +142,19 @@ public class MainControler {
 
     // TODO - JavaDoc - Lebeda
     private List<VOFile> getVoFiles(VOUuid voUuid) {
-        final File[] listFiles = new File(voUuid.getPath()).listFiles((dir, name) -> name.startsWith(voUuid.getName()));
-        return Arrays.stream(listFiles)
-                .map(file1 -> new VOFile(file1.getAbsolutePath()))
-                .collect(Collectors.toList());
+//        final File[] listFiles = new File(voUuid.getPath()).listFiles({ dir, name -> name.startsWith(voUuid.getName())});
+//        Arrays.stream(listFiles)
+//                .map({ file1 -> new VOFile(file1.getAbsolutePath()) })
+//                .collect(Collectors.toList());
+
+        List<VOFile> result = new ArrayList<>()
+        new File(voUuid.getPath()).eachFile { File f ->
+            if (f.name.startsWith(voUuid.getName())) {
+                result.add(new VOFile(f.getAbsolutePath()))
+            }
+        }
+
+        return result
     }
 
     @RequestMapping("/chooseDbModalList")
@@ -233,8 +232,8 @@ public class MainControler {
         fileService.fillNavigatorData(oldModel, file, true);
 
         oldModel.put("name", file.getName());
-        oldModel.put("optnames", Arrays.stream(file.getParentFile().listFiles(File::isDirectory))
-                        .map(File::getName)
+        oldModel.put("optnames", Arrays.stream(file.getParentFile().listFiles({ it.isDirectory() }))
+                        .map({ it.getName() })
                         .collect(Collectors.toList())
         );
 

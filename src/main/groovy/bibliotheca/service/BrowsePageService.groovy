@@ -1,32 +1,27 @@
-package bibliotheca.service.impl;
+package bibliotheca.service
 
-import bibliotheca.model.VOFile;
-import bibliotheca.model.VOFileDetail;
-import bibliotheca.model.VOPath;
-import bibliotheca.model.VOUuid;
-import bibliotheca.service.*;
-import bibliotheca.tools.Tools;
-import lombok.SneakyThrows;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.CompareToBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import bibliotheca.model.VOFile
+import bibliotheca.model.VOFileDetail
+import bibliotheca.model.VOPath
+import bibliotheca.model.VOUuid
+import bibliotheca.tools.Tools
+import lombok.SneakyThrows
+import org.apache.commons.collections4.CollectionUtils
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.builder.CompareToBuilder
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 
-import java.io.File;
-import java.net.URLEncoder;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import java.nio.file.Paths
+import java.util.stream.Collectors
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 15.12.14
  */
 @Service
-public class BrowsePageServiceImpl implements BrowsePageService {
+public class BrowsePageService {
 
     @Autowired
     private FileService fileService;
@@ -46,7 +41,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     @Autowired
     private UuidService uuidService;
 
-    @Override
+    
     @SneakyThrows
     public Map<String, Object> getModel(String path, final String booksearch,  final String basename) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
@@ -96,7 +91,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
             // search by index
             final Set<String> search = ftMetaService.search(booksearch);
             // TODO Lebeda - konvertovat nalezené do books
-            search.forEach(s -> {
+            search.forEach({ s ->
                 final VOUuid voUuid = uuidService.get(s);
                 dirs.add(Paths.get(voUuid.getPath(), voUuid.getName() + ".uuid").toFile());
             });
@@ -110,8 +105,8 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         final ArrayList<VOPath> fileList = new ArrayList<>();
 
         dirs.stream()
-                .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
-                .forEach(f -> {
+                .sorted({ o1, o2 -> o1.getName().compareToIgnoreCase(o2.getName()) })
+                .forEach({ f ->
                     final VOPath voPath = new VOPath(f.getName(), f.getAbsolutePath());
                     if (f.isDirectory()) {
                         dirList.add(voPath);
@@ -128,10 +123,10 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         model.put("fileDetails", fileDetails);
 
         final List<VOPath> mhtFiles = fileList.stream()
-                .filter(voPath -> (
+                .filter({ voPath -> (
                         voPath.getPath().toLowerCase().endsWith("mht")
-                                || voPath.getPath().toLowerCase().endsWith("mhtml")))
-                .sorted((o1, o2) -> o1.getName().compareTo(o2.getName()))
+                                || voPath.getPath().toLowerCase().endsWith("mhtml")) })
+                .sorted({ o1, o2 -> o1.getName().compareTo(o2.getName()) } as Comparator<? super VOPath>)
                 .collect(Collectors.toList());
         model.put("mhtFiles", mhtFiles);
 
@@ -141,13 +136,14 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     public List<VOFileDetail> getVoFileDetails(List<VOPath> fileList) {
         HashMap<String, List<VOFile>> fileMap = new HashMap<>();
         fileList.parallelStream()
-                .filter(voPath -> !(
-                                voPath.getPath().toLowerCase().endsWith("mht")
-                                        || voPath.getPath().toLowerCase().endsWith("mhtml")
-                                        || voPath.getName().contains(".bak2")
-                        )
-                )
-                .forEachOrdered(voPath -> {
+                .filter({ voPath ->
+            !(
+                    voPath.getPath().toLowerCase().endsWith("mht")
+                            || voPath.getPath().toLowerCase().endsWith("mhtml")
+                            || voPath.getName().contains(".bak2")
+            )
+        })
+                .forEachOrdered({ voPath ->
                     String basenamePath = FilenameUtils.getBaseName(voPath.getName());
                     if (!fileMap.containsKey(basenamePath)) {
                         fileMap.put(basenamePath, new ArrayList<>());
@@ -160,7 +156,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 
         List<VOFileDetail> fileDetails = new ArrayList<>();
         fileMap.entrySet().stream()
-                .forEach(stringListEntry -> {
+                .forEach({ stringListEntry ->
                     final String key = stringListEntry.getKey();
                     final List<VOFile> voFileList = stringListEntry.getValue();
 
@@ -174,16 +170,16 @@ public class BrowsePageServiceImpl implements BrowsePageService {
                     }
                 });
 
-        CollectionUtils.filter(fileDetails, object -> object != null);
+        CollectionUtils.filter(fileDetails, { object -> object != null });
 
         if (CollectionUtils.isNotEmpty(fileDetails)) {
             try {
-                fileDetails.sort((o1, o2) -> new CompareToBuilder()
+                fileDetails.sort({ o1, o2 -> new CompareToBuilder()
                         .append(o1.getBookauthor(), o2.getBookauthor())
                         .append(o1.getSerie(), o2.getSerie())
                         .append(o1.getTitle(), o2.getTitle())
                         .append(o1.getBookFileName(), o2.getBookFileName())
-                        .toComparison());
+                        .toComparison() });
             } catch (NullPointerException e) {
                 System.out.println("nic");
             }
@@ -192,7 +188,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
     }
 
 
-    @Override
+    
     public boolean tryDb(String path, String name) {
 //        final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
 
@@ -212,7 +208,7 @@ public class BrowsePageServiceImpl implements BrowsePageService {
 //        return model;
     }
 
-    @Override
+    
     @SneakyThrows
     public Map<String, Object> loadItemModel(String path, String name) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - Browse fiction", path);
@@ -227,19 +223,19 @@ public class BrowsePageServiceImpl implements BrowsePageService {
         return model;
     }
 
-    @Override
+    
     public void tryDbAll(String path) {
         getVoFileDetails(Tools.getVoPaths(path)).parallelStream()
-                .filter(voFileDetail -> !voFileDetail.getDbknihUrlExists())
-                .forEach(voFileDetail1 -> dataBaseKnihService.tryDb(voFileDetail1));
+                .filter({ voFileDetail -> !voFileDetail.getDbknihUrlExists() })
+                .forEach({ voFileDetail1 -> dataBaseKnihService.tryDb(voFileDetail1) });
     }
 
-    @Override
+    
     public void tidyUpAll(String path) {
         getVoFileDetails(Tools.getVoPaths(path)).parallelStream()
-                .filter(VOFileDetail::getDbknihUrlExists)
-                .filter(VOFileDetail::isTidyUp)
-                .forEach(voFileDetail1 -> fileService.tidyUpBook(voFileDetail1.getBookFileName(), path));
+                .filter({ it.getDbknihUrlExists() })
+                .filter({ it.isTidyUp() })
+                .forEach({ voFileDetail1 -> fileService.tidyUpBook(voFileDetail1.getBookFileName(), path) });
     }
 
 

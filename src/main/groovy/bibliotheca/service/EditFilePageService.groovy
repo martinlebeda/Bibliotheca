@@ -1,34 +1,25 @@
-package bibliotheca.service.impl;
+package bibliotheca.service
 
-import bibliotheca.model.VOFile;
-import bibliotheca.service.BookDetailService;
-import bibliotheca.service.DataBaseKnihService;
-import bibliotheca.service.EditFilePageService;
-import bibliotheca.service.FileService;
-import bibliotheca.tools.Tools;
-import lombok.SneakyThrows;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import bibliotheca.model.VOFile
+import bibliotheca.tools.Tools
+import lombok.SneakyThrows
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.io.IOUtils
+import org.apache.commons.lang3.StringUtils
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
-
-
+import java.nio.file.Paths
+import java.util.stream.Collectors
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 17.12.14
  */
 @Service
-public class EditFilePageServiceImpl implements EditFilePageService {
+public class EditFilePageService {
 
     @Autowired
     private FileService fileService;
@@ -39,7 +30,7 @@ public class EditFilePageServiceImpl implements EditFilePageService {
     @Autowired
     private BookDetailService bookDetailService;
 
-    @Override
+
     public Map<String, Object> getModel(String path, String basename, final String frmName, String frmCover, String frmDescription, String dbknih,
                                         String loadImage, String loadDescription, String loadAll, String loadAllClose, String tryDbKnih) {
         final HashMap<String, Object> model = Tools.getDefaultModel("Bibliotheca - edit file", path);
@@ -50,10 +41,10 @@ public class EditFilePageServiceImpl implements EditFilePageService {
 
         List<VOFile> voFileList = new ArrayList<>();
         final String finalBasename2 = basename;
-        File[] listFiles = file.listFiles(pathname -> {
+        File[] listFiles = file.listFiles({ pathname ->
             return pathname.getName().startsWith(finalBasename2);
         });
-        Arrays.stream(listFiles).forEach(file1 -> voFileList.add(new VOFile(file1.getAbsolutePath())));
+        Arrays.stream(listFiles).forEach({ file1 -> voFileList.add(new VOFile(file1.getAbsolutePath())) });
 
         // rename if need
         if (StringUtils.isNoneBlank(frmName) && !basename.equals(frmName)) {
@@ -130,8 +121,8 @@ public class EditFilePageServiceImpl implements EditFilePageService {
 
         model.put("name", basename);
         model.put("author", file.getName());
-        model.put("optnames", Arrays.stream(file.listFiles(File::isFile))
-                        .map(file1 -> FilenameUtils.getBaseName(file1.getName()))
+        model.put("optnames", Arrays.stream(file.listFiles({ it.isFile() }))
+                        .map({ file1 -> FilenameUtils.getBaseName(file1.getName()) })
                         .collect(Collectors.toSet())
         );
 
@@ -141,7 +132,6 @@ public class EditFilePageServiceImpl implements EditFilePageService {
         return model;
     }
 
-    @Override
     public void saveDbUrl(String path, String name, String url) {
         // read metadata
         Map<String, Object> metadata = Tools.getStringStringMap(path, name);

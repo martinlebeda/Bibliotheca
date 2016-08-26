@@ -124,7 +124,7 @@
 
     <div class="row prevnextnav">
         <div class="col-xs-6 navPrev">
-            <a th:title="|Join to directory ${prevDir.name}|"
+            <a th:if="${prevDir}" th:title="|Join to directory ${prevDir.name}|"
                th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${prevDir.absolutePath} + '\');'">
                 <i class="fa fa-backward"></i>
             </a>
@@ -133,7 +133,7 @@
         </div>
         <div class="col-xs-6 navNext">
             <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a>
-            <a th:title="|Join to directory ${nextDir.name}|"
+            <a th:if="${nextDir}" th:title="|Join to directory ${nextDir.name}|"
                th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${nextDir.absolutePath} + '\');'">
                 <i class="fa fa-forward"></i>
             </a>
@@ -312,7 +312,7 @@
 
     <div class="row prevnextnav">
         <div class="col-xs-6 navPrev">
-            <a th:title="|Join to directory ${prevDir.name}|"
+            <a th:if="${prevDir}" th:title="|Join to directory ${prevDir.name}|"
                th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${prevDir.absolutePath} + '\');'">
                 <i class="fa fa-backward"></i>
             </a>
@@ -322,7 +322,7 @@
         <div class="col-xs-6 navNext">
             <a th:if="${nextDir}" th:text="${nextDir.name}" th:href="|browse?path=${nextDir.absolutePath}|">nextDir</a>
             <i class="fa fa-forward"></i>
-            <a th:title="|Join to directory ${nextDir.name}|"
+            <a th:if="${nextDir}" th:title="|Join to directory ${nextDir.name}|"
                th:onclick="'javascript:joinToDir(\'' + ${path} + '\', \'' + ${nextDir.absolutePath} + '\');'">
                 <i class="fa fa-forward"></i>
             </a>
